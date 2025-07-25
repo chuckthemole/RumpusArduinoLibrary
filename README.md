@@ -8,13 +8,13 @@ Current modules:
 
 ---
 
-## 📦 Installation Instructions
+## Installation Instructions
 
 This library is organized as a **monorepo**. Each module (e.g. `WiFiHelper`, `LogoLED`) is a self-contained PlatformIO-compatible library stored in its own subdirectory.
 
 Since PlatformIO does not support importing subfolders directly via `lib_deps`, you must **clone this repo and symlink** individual libraries into your project manually.
 
-### ✅ Step-by-Step Setup
+### Step-by-Step Setup
 
 1. **Clone this repository** somewhere on your system (outside your PlatformIO project directory):
 
@@ -29,12 +29,12 @@ Since PlatformIO does not support importing subfolders directly via `lib_deps`, 
     ```
 
 # Symlink the WiFiHelper library
-    ```bash
+    ```
     ln -s /full/path/to/RumpusArduinoLibrary/WiFiHelper lib/WiFiHelper
     ```
 
 # Optionally symlink LogoLED too
-    ```bash
+    ```
     ln -s /full/path/to/RumpusArduinoLibrary/LogoLED lib/LogoLED
     ```
 
