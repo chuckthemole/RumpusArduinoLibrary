@@ -25,38 +25,33 @@ lib_deps =
 Here's a basic example of how to use the `WiFiHelper` class:
 ```cpp
 #include <Arduino.h>
-#include <WiFiS3.h>
 #include "WiFiHelper.h"
+#include "config.h" // Needed for WIFI_SSID and WIFI_PASS
 
-// Replace with your actual network credentials
-const char* ssid = "YOUR_SSID";
-const char* password = "YOUR_PASSWORD";
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASS;
 
 // Create a WiFiHelper instance
-WiFiHelper wifiHelper;
+WiFiHelper wifiHelper(ssid, password);
 
-void setup() {
-    Serial.begin(115200);
-    while (!Serial);
+void setup()
+{
+    Serial.begin(BAUD_RATE);
+    while (!Serial)
+        ;
 
-    Serial.println("Booting...");
+    Serial.println("Booting WiFi helper...");
 
     // Connect to WiFi
-    wifiHelper.connect(ssid, password);
+    wifiHelper.begin();
 
     // Print connection details
     wifiHelper.printStatus();
 }
 
-void loop() {
-    // Check WiFi connection status every 5 seconds
-    delay(5000);
-
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi disconnected! Attempting to reconnect...");
-        wifiHelper.connect(ssid, password);
-    } else {
-        Serial.println("WiFi still connected.");
-    }
+void loop()
+{
+    wifiHelper.maintainConnection();
+    delay(1000);
 }
 ```
