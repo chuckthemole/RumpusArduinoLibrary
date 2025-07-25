@@ -1,7 +1,15 @@
 #include "WiFiHelper.h"
 
-WiFiHelper::WiFiHelper(const char *ssid, const char *password, unsigned int portTCP, unsigned int portUDP)
-    : _ssid(ssid), _password(password), _portTCP(portTCP), _portUDP(portUDP), _server(portTCP) {}
+WiFiHelper::WiFiHelper(
+    const char *ssid,
+    const char *password,
+    unsigned int portTCP,
+    unsigned int portUDP)
+    : _ssid(ssid),
+      _password(password),
+      _portTCP(portTCP),
+      _portUDP(portUDP),
+      _server(portTCP) {}
 
 void WiFiHelper::begin()
 {

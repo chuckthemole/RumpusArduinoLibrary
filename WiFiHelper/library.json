@@ -1,8 +1,30 @@
 {
     "name": "WiFiHelper",
     "version": "1.0.0",
+    "description": "A small helper for managing WiFi, TCP server/client, and UDP broadcasting on Arduino boards using WiFiS3.",
+    "keywords": [
+        "wifi",
+        "arduino",
+        "network",
+        "helper",
+        "tcp",
+        "udp"
+    ],
+    "authors": [
+        {
+            "name": "Chuck Thomas",
+            "email": "chuckthemole@gmail.com",
+            "url": "https://github.com/chuckthemole",
+            "maintainer": true
+        }
+    ],
     "dependencies": [
         "arduino-libraries/WiFiS3",
         "arduino-libraries/WiFiUdp"
-    ]
+    ],
+    "license": "MIT",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": "*"
 }
