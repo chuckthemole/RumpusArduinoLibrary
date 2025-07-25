@@ -2,6 +2,7 @@
     "name": "WiFiHelper",
     "version": "1.0.0",
     "dependencies": [
-        "arduino-libraries/WiFiS3"
+        "arduino-libraries/WiFiS3",
+        "arduino-libraries/WiFiUdp"
     ]
 }
