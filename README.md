@@ -27,14 +27,12 @@ Since PlatformIO does not support importing subfolders directly via `lib_deps`, 
     cd your-platformio-project
     mkdir -p lib
     ```
-
-# Symlink the WiFiHelper library
-    ```
+    **Symlink the WiFiHelper library**
+    ```bash
     ln -s /full/path/to/RumpusArduinoLibrary/WiFiHelper lib/WiFiHelper
     ```
-
-# Optionally symlink LogoLED too
-    ```
+    **Optionally symlink LogoLED too**
+    ```bash
     ln -s /full/path/to/RumpusArduinoLibrary/LogoLED lib/LogoLED
     ```
 
