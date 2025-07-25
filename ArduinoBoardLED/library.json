@@ -1,0 +1,25 @@
+{
+    "name": "ArduinoBoardLED",
+    "version": "1.0.0",
+    "description": "Display scrolling messages on the Arduino UNO R4 WiFi built-in LED matrix.",
+    "keywords": [
+        "led",
+        "matrix",
+        "display",
+        "arduino",
+        "uno",
+        "r4"
+    ],
+    "authors": [
+        {
+            "name": "Chuck Thomas",
+            "email": "chuckthemole@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "arduino-libraries/Arduino_LED_Matrix": "*"
+    },
+    "frameworks": "arduino",
+    "platforms": "*"
+}
