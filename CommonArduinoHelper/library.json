@@ -1,0 +1,36 @@
+{
+    "name": "CommonArduinoHelper",
+    "version": "0.1.0",
+    "author": {
+        "name": "Chuck Thomas",
+        "email": "chuckthemole@gmail.com"
+    },
+    "description": "A helper library for common LCD and button routines for Arduino projects.",
+    "keywords": [
+        "arduino",
+        "lcd",
+        "button",
+        "helper",
+        "common",
+        "utility"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chuckthemole/RumpusArduinoLibrary.git"
+    },
+    "license": "MIT",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": [
+        "atmelavr",
+        "espressif8266",
+        "espressif32"
+    ],
+    "headers": "CommonArduinoHelper.h",
+    "dependencies": [
+        {
+            "name": "LiquidCrystal"
+        }
+    ]
+}
