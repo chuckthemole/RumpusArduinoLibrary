@@ -16,9 +16,16 @@ NC='\033[0m' # No Color
 
 # Try to read first uncommented [env:...] from platformio.ini
 extract_ini_env() {
-    grep -E '^\[env:[^]]+\]' platformio.ini | grep -v '^\s*;' | sed -nE 's/^\[env:([^\]]+)\]/\1/p' | head -n 1
+    awk '
+        /^[[:space:]]*;/ { next }                              # skip comments
+        /^[[:space:]]*\[env:[^]]+\]/ {
+            sub(/^[[:space:]]*\[env:/, "")
+            sub(/\][[:space:]]*$/, "")
+            print
+            exit
+        }
+    ' platformio.ini
 }
-
 
 # Step 1: Try to extract from platformio.ini
 PIO_ENV=$(extract_ini_env)
