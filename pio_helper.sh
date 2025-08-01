@@ -14,13 +14,37 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Load .env if it exists
-if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+# Try to read first uncommented [env:...] from platformio.ini
+extract_ini_env() {
+    grep -E '^\[env:' platformio.ini | grep -v '^\s*;' | sed -E 's/^\[env:([^\]]+)\].*/\1/' | head -n 1
+}
+
+# Step 1: Try to extract from platformio.ini
+PIO_ENV=$(extract_ini_env)
+
+if [ -n "$PIO_ENV" ]; then
+    echo -e "${GREEN}Environment detected from platformio.ini:${NC} $PIO_ENV"
+else
+    echo -e "${YELLOW}No uncommented environment found in platformio.ini.${NC}"
+
+    # Step 2: Try to load from .env file
+    if [ -f .env ]; then
+        PIO_ENV=$(grep -E '^PIO_ENV=' .env | cut -d '=' -f2 | tr -d '[:space:]')
+        if [ -n "$PIO_ENV" ]; then
+            echo -e "${GREEN}Environment loaded from .env file:${NC} $PIO_ENV"
+        else
+            echo -e "${YELLOW}.env file found but PIO_ENV is not set.${NC}"
+        fi
+    else
+        echo -e "${YELLOW}.env file not found.${NC}"
+    fi
 fi
 
-# Default to a fallback environment if not set
-PIO_ENV=${PIO_ENV:-uno_wifi_rev2}
+# Step 3: Fallback to hardcoded default
+if [ -z "$PIO_ENV" ]; then
+    PIO_ENV="uno_wifi_rev2"
+    echo -e "${RED}Falling back to default environment:${NC} $PIO_ENV"
+fi
 
 # Function to detect Arduino port automatically
 detect_port() {
