@@ -7,12 +7,18 @@
 DEFAULT_BAUD=9600
 PORT=""
 
+# NEW: Default PlatformIO values
+DEFAULT_BOARD="uno_r4_wifi"
+DEFAULT_PLATFORM="renesas-ra"
+DEFAULT_FRAMEWORK="arduino"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
 
 # Try to read first uncommented [env:...] from platformio.ini
 extract_ini_env() {
@@ -27,32 +33,37 @@ extract_ini_env() {
     ' platformio.ini
 }
 
-# Step 1: Try to extract from platformio.ini
-PIO_ENV=$(extract_ini_env)
+# Function to get PlatformIO environment
+get_pio_env() {
+    # Step 1: Try to extract from platformio.ini
+    local PIO_ENV=$(extract_ini_env)
 
-if [ -n "$PIO_ENV" ]; then
-    echo -e "${GREEN}Environment detected from platformio.ini:${NC} $PIO_ENV"
-else
-    echo -e "${YELLOW}No uncommented environment found in platformio.ini.${NC}"
-
-    # Step 2: Try to load from .env file
-    if [ -f .env ]; then
-        PIO_ENV=$(grep -E '^PIO_ENV=' .env | cut -d '=' -f2 | tr -d '[:space:]')
-        if [ -n "$PIO_ENV" ]; then
-            echo -e "${GREEN}Environment loaded from .env file:${NC} $PIO_ENV"
-        else
-            echo -e "${YELLOW}.env file found but PIO_ENV is not set.${NC}"
-        fi
+    if [ -n "$PIO_ENV" ]; then
+        echo -e "${GREEN}Environment detected from platformio.ini:${NC} $PIO_ENV"
     else
-        echo -e "${YELLOW}.env file not found.${NC}"
-    fi
-fi
+        echo -e "${YELLOW}No uncommented environment found in platformio.ini.${NC}"
 
-# Step 3: Fallback to hardcoded default
-if [ -z "$PIO_ENV" ]; then
-    PIO_ENV="uno_wifi_rev2"
-    echo -e "${RED}Falling back to default environment:${NC} $PIO_ENV"
-fi
+        # Step 2: Try to load from .env file
+        if [ -f .env ]; then
+            PIO_ENV=$(grep -E '^PIO_ENV=' .env | cut -d '=' -f2 | tr -d '[:space:]')
+            if [ -n "$PIO_ENV" ]; then
+                echo -e "${GREEN}Environment loaded from .env file:${NC} $PIO_ENV"
+            else
+                echo -e "${YELLOW}.env file found but PIO_ENV is not set.${NC}"
+            fi
+        else
+            echo -e "${YELLOW}.env file not found.${NC}"
+        fi
+    fi
+
+    # Step 3: Fallback to hardcoded default
+    if [ -z "$PIO_ENV" ]; then
+        PIO_ENV="uno_wifi_rev2"
+        echo -e "${RED}Falling back to default environment:${NC} $PIO_ENV"
+    fi
+
+    echo "$PIO_ENV"
+}
 
 # Function to detect Arduino port automatically
 detect_port() {
@@ -100,6 +111,7 @@ show_usage() {
     echo "  build               - Build only (no upload)"
     echo "  list, l             - List available devices"
     echo "  kill, k             - Kill processes using serial ports"
+    echo "  new <dir>           - Create a new Arduino project (with override options)"
     echo ""
     echo "Options:"
     echo "  -p, --port PORT     - Specify port (e.g., /dev/cu.usbmodemXXXX)"
@@ -111,40 +123,19 @@ show_usage() {
     echo "  $0 monitor -p /dev/cu.usbmodemF412FA9F37082"
     echo "  $0 both -b 115200"
     echo "  $0 upload -p /dev/cu.usbmodemF412FA9F37082"
+    echo "  $0 new MyProject"
+    echo "  $0 new MyProject --board nano_every --platform atmelmegaavr --framework arduino"
 }
 
 # Parse command line arguments
 COMMAND=""
+ARGS=()
 BAUD=$DEFAULT_BAUD
 
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        upload|u)
-            COMMAND="upload"
-            shift
-            ;;
-        monitor|m)
-            COMMAND="monitor"
-            shift
-            ;;
-        both|b)
-            COMMAND="both"
-            shift
-            ;;
-        clean|c)
-            COMMAND="clean"
-            shift
-            ;;
-        build)
-            COMMAND="build"
-            shift
-            ;;
-        list|l)
-            COMMAND="list"
-            shift
-            ;;
-        kill|k)
-            COMMAND="kill"
+    case "$1" in
+        upload|u|monitor|m|both|b|clean|c|build|list|l|kill|k|new|n)
+            COMMAND="$1"
             shift
             ;;
         -p|--port)
@@ -160,13 +151,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         *)
-            if [ -z "$COMMAND" ]; then
-                COMMAND="$1"
-            else
-                echo -e "${RED}Unknown option: $1${NC}"
-                show_usage
-                exit 1
-            fi
+            ARGS+=("$1")
             shift
             ;;
     esac
@@ -181,6 +166,7 @@ fi
 # Execute commands
 case $COMMAND in
     upload)
+        PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Building and uploading...${NC}"
         pio run --target upload -e "$PIO_ENV"
@@ -190,6 +176,7 @@ case $COMMAND in
         if [ -z "$PORT" ]; then
             detect_port || exit 1
         fi
+        PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Starting serial monitor on $PORT at ${BAUD} baud...${NC}"
         echo -e "${YELLOW}Press Ctrl+C to exit monitor${NC}"
@@ -197,6 +184,7 @@ case $COMMAND in
         ;;
     
     both)
+        PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Building and uploading...${NC}"
         pio run --target upload -e "$PIO_ENV"
@@ -215,12 +203,14 @@ case $COMMAND in
         ;;
     
     clean)
+        PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Cleaning build files...${NC}"
         pio run --target clean -e "$PIO_ENV"
         ;;
     
     build)
+        PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Building project...${NC}"
         pio run -e "$PIO_ENV"
@@ -238,7 +228,61 @@ case $COMMAND in
         pkill -f platformio 2>/dev/null
         echo -e "${GREEN}Done! Serial ports should be free now.${NC}"
         ;;
-    
+    new)
+        if [ -z "${ARGS[0]}" ]; then
+            echo -e "${RED}Please specify a project name.${NC}"
+            echo "Example: $0 new my_project"
+            exit 1
+        fi
+
+        PROJECT_NAME="${ARGS[0]}"
+        shift
+
+
+        BOARD="$DEFAULT_BOARD"
+        PLATFORM="$DEFAULT_PLATFORM"
+        FRAMEWORK="$DEFAULT_FRAMEWORK"
+
+        # Parse overrides
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                --board)
+                    BOARD="$2"
+                    shift 2
+                    ;;
+                --platform)
+                    PLATFORM="$2"
+                    shift 2
+                    ;;
+                --framework)
+                    FRAMEWORK="$2"
+                    shift 2
+                    ;;
+                *)
+                    echo -e "${RED}Unknown option for 'new': $1${NC}"
+                    exit 1
+                    ;;
+            esac
+        done
+
+        if [ -z "$PROJECT_NAME" ]; then
+            echo -e "${RED}Please specify a project name.${NC}"
+            echo "Example: $0 new my_project"
+            exit 1
+        fi
+
+        echo -e "${BLUE}Creating new PlatformIO project: ${GREEN}$PROJECT_NAME${NC}"
+        echo -e "${BLUE}Board:${NC} $BOARD  ${BLUE}Platform:${NC} $PLATFORM  ${BLUE}Framework:${NC} $FRAMEWORK"
+
+        mkdir -p "$PROJECT_NAME"
+        cd "$PROJECT_NAME" || exit 1
+        pio project init --board "$BOARD" --project-option="platform=$PLATFORM" --project-option="framework=$FRAMEWORK"
+
+        echo -e "${GREEN}Project initialized in ./$PROJECT_NAME${NC}"
+        echo -e "${YELLOW}Next: cd $PROJECT_NAME && edit src/main.cpp${NC}"
+        exit 0
+        ;;
+
     *)
         echo -e "${RED}Unknown command: $COMMAND${NC}"
         show_usage
