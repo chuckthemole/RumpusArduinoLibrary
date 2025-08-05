@@ -1,0 +1,30 @@
+{
+    "name": "LCDWrapper",
+    "version": "1.0.0",
+    "keywords": "lcd, liquidcrystal, display, arduino, wrapper",
+    "description": "A lightweight wrapper around the LiquidCrystal library for easier LCD management with default pin configuration.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chuckthemole/RumpusArduinoLibrary.git"
+    },
+    "authors": [
+        {
+            "name": "Chuck Thomas",
+            "email": "chuckthemole@gmail.com",
+            "maintainer": true
+        }
+    ],
+    "dependencies": [
+        {
+            "name": "Arduino",
+            "version": "*"
+        }
+    ],
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": "*",
+    "headers": [
+        "LcdWrapper.h"
+    ]
+}

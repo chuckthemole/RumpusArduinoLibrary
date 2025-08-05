@@ -7,11 +7,17 @@
 // LCD pin definitions (change these if your setup changes)
 namespace LCD
 {
+    [[deprecated("Use LcdWrapper instead of raw pin constants.")]]
     constexpr uint8_t rs = 8;
+    [[deprecated("Use LcdWrapper instead of raw pin constants.")]]
     constexpr uint8_t en = 9;
+    [[deprecated("Use LcdWrapper instead of raw pin constants.")]]
     constexpr uint8_t d4 = 4;
+    [[deprecated("Use LcdWrapper instead of raw pin constants.")]]
     constexpr uint8_t d5 = 5;
+    [[deprecated("Use LcdWrapper instead of raw pin constants.")]]
     constexpr uint8_t d6 = 6;
+    [[deprecated("Use LcdWrapper instead of raw pin constants.")]]
     constexpr uint8_t d7 = 7;
 
     // Extern reference to globally defined lcd instance
