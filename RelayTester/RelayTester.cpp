@@ -1,4 +1,4 @@
-j #include "RelayTester.h"
+#include "RelayTester.h"
 
     RelayTester::RelayTester(uint8_t startPin, uint8_t endPin, unsigned long delayMillis)
     : _startPin(startPin), _endPin(endPin), _delayMillis(delayMillis)
