@@ -1,0 +1,20 @@
+{
+    "name": "RelayTester",
+    "version": "1.0.0",
+    "author": "Chuck Thomas",
+    "description": "A utility library to help identify which digital pins control relays on an Arduino relay shield.",
+    "keywords": [
+        "relay",
+        "tester",
+        "diagnostic",
+        "debug"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chuckthemole/RumpusArduinoLibrary"
+    },
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": "*"
+}
