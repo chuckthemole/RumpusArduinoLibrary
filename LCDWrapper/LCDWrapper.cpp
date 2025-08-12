@@ -27,6 +27,36 @@ void LcdWrapper::print(const String &msg)
     lcd.print(msg);
 }
 
+void LcdWrapper::print(const char *msg)
+{
+    lcd.print(msg);
+}
+
+void LcdWrapper::print(int value)
+{
+    lcd.print(value);
+}
+
+void LcdWrapper::print(unsigned int value)
+{
+    lcd.print(value);
+}
+
+void LcdWrapper::print(long value)
+{
+    lcd.print(value);
+}
+
+void LcdWrapper::print(unsigned long value)
+{
+    lcd.print(value);
+}
+
+void LcdWrapper::print(float value, int decimals)
+{
+    lcd.print(value, decimals);
+}
+
 void LcdWrapper::setCursor(uint8_t col, uint8_t row)
 {
     lcd.setCursor(col, row);

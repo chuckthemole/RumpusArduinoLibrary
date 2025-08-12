@@ -55,3 +55,17 @@ void loop()
     delay(1000);
 }
 ```
+
+Example config.h:
+```cpp
+// config.h
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define WIFI_SSID "yourssid"
+#define WIFI_PASS "yourpassword"
+#define IS_SIMULATION true // other vars
+#define USE_WIFI true // another var
+
+#endif
+```

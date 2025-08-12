@@ -61,6 +61,13 @@ public:
      */
     void print(const String &msg);
 
+    void print(const char *msg);
+    void print(int value);
+    void print(unsigned int value);
+    void print(long value);
+    void print(unsigned long value);
+    void print(float value, int decimals = 2);
+
     /**
      * @brief Sets the cursor to a specific column and row.
      *
