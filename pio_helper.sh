@@ -101,7 +101,7 @@ show_usage() {
     echo "  monitor, m          - Start serial monitor"
     echo "  both, b             - Upload then monitor"
     echo "  clean, c            - Clean build files"
-    echo "  build               - Build only (no upload)"
+    echo "  build, d            - Build only (no upload)"
     echo "  list, l             - List available devices"
     echo "  kill, k             - Kill processes using serial ports"
     echo "  new <dir>           - Create a new Arduino project (with override options)"
@@ -158,14 +158,14 @@ fi
 
 # Execute commands
 case $COMMAND in
-    upload)
+    upload|u)
         PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Building and uploading...${NC}"
         pio run --target upload -e "$PIO_ENV"
         ;;
     
-    monitor)
+    monitor|m)
         if [ -z "$PORT" ]; then
             detect_port || exit 1
         fi
@@ -176,7 +176,7 @@ case $COMMAND in
         pio device monitor --port "$PORT" --baud "$BAUD"
         ;;
     
-    both)
+    both|b)
         PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Building and uploading...${NC}"
@@ -195,26 +195,26 @@ case $COMMAND in
         fi
         ;;
     
-    clean)
+    clean|c)
         PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Cleaning build files...${NC}"
         pio run --target clean -e "$PIO_ENV"
         ;;
     
-    build)
+    build|d)
         PIO_ENV=$(get_pio_env)
         echo -e "${BLUE}Using environment: ${GREEN}$PIO_ENV${NC}"
         echo -e "${BLUE}Building project...${NC}"
         pio run -e "$PIO_ENV"
         ;;
     
-    list)
+    list|l)
         echo -e "${BLUE}Available devices:${NC}"
         pio device list
         ;;
     
-    kill)
+    kill|k)
         echo -e "${BLUE}Killing processes using serial ports...${NC}"
         pkill -f "pio device monitor" 2>/dev/null
         pkill -f "cu.usbmodem" 2>/dev/null
