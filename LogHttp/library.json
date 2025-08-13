@@ -1,0 +1,33 @@
+{
+    "name": "LogHttp",
+    "version": "1.0.0",
+    "description": "A simple Arduino library for sending HTTP log messages using WiFiClient and ArduinoHttpClient.",
+    "keywords": [
+        "http",
+        "logging",
+        "wifi",
+        "arduino",
+        "client"
+    ],
+    "authors": [
+        {
+            "name": "Your Name",
+            "email": "you@example.com",
+            "maintainer": true
+        }
+    ],
+    "license": "MIT",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": [
+        "espressif8266",
+        "espressif32",
+        "atmelsam",
+        "atmelavr"
+    ],
+    "dependencies": [
+        "arduino-libraries/ArduinoHttpClient"
+    ],
+    "headers": "LogHttp.h"
+}
