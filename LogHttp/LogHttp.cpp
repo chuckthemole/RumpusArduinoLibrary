@@ -75,16 +75,34 @@ bool LogHttp::log(const String &message)
     _httpClient->endRequest();
 
     int status = _httpClient->responseStatusCode();
-    if (status = HTTP_ERROR_CONNECTION_FAILED)
+    if (status < 0)
     {
         Serial.println("Something failed during the http exchange. Consider returning smaller message back.");
     }
-    else if (status < 0)
+    if (status == HTTP_ERROR_CONNECTION_FAILED)
     {
-        Serial.println("Something failed during the http exchange. Consider returning smaller message back..");
+        Serial.println("HTTP_ERROR_CONNECTION_FAILED");
+    }
+    else if (status == HTTP_ERROR_API)
+    {
+
+    }
+    else if (status == HTTP_ERROR_TIMED_OUT)
+    {
+        Serial.println("HTTP_ERROR_TIMED_OUT");
+    }
+    else if (status == HTTP_ERROR_INVALID_RESPONSE)
+    {
+        Serial.println("HTTP_ERROR_INVALID_RESPONSE");
+    }
+    else if (status == 0)
+    {
+        Serial.println("Status return 0");
+        return true;
     }
     else if (status >= 200 && status < 300)
     {
+        Serial.println("Status return 200");
         return true;
     }
     else
