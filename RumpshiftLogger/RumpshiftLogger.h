@@ -50,14 +50,38 @@ public:
     /// Log an error message.
     void error(const String &msg);
 
+    template <typename T>
+    void error(const T &value)
+    {
+        error(String(value)); // convert anything to String
+    }
+
     /// Log a warning message.
     void warn(const String &msg);
+
+    template <typename T>
+    void warn(const T &value)
+    {
+        warn(String(value)); // convert anything to String
+    }
 
     /// Log an informational message.
     void info(const String &msg);
 
+    template <typename T>
+    void info(const T &value)
+    {
+        info(String(value)); // convert anything to String
+    }
+
     /// Log a debug message.
     void debug(const String &msg);
+
+    template <typename T>
+    void debug(const T &value)
+    {
+        debug(String(value)); // convert anything to String
+    }
 
 private:
     uint32_t baudRate; ///< Serial baud rate.

@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WiFiS3.h>
 #include <WiFiUdp.h>
+#include "RumpshiftLogger.h"
 
 /**
  * @class WiFiHelper
@@ -23,7 +24,12 @@ public:
      * @param portTCP TCP server listening port. Defaults to 12345.
      * @param portUDP UDP communication port. Defaults to 8888.
      */
-    WiFiHelper(const char *ssid, const char *password, unsigned int portTCP = 12345, unsigned int portUDP = 8888);
+    WiFiHelper(
+        const char *ssid,
+        const char *password,
+        RumpshiftLogger *logger = nullptr,
+        unsigned int portTCP = 12345,
+        unsigned int portUDP = 8888);
 
     /**
      * @brief Initializes WiFi connection and starts TCP server.
@@ -74,6 +80,8 @@ private:
 
     unsigned long _lastStatusCheck = 0; ///< Last time status was printed
     unsigned long _lastBroadcast = 0;   ///< Last time a broadcast was sent (if applicable)
+
+    RumpshiftLogger *_logger = nullptr; //< Pointer to your logger
 
     /**
      * @brief Scans for nearby WiFi networks and prints their SSIDs.

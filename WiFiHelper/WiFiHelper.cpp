@@ -3,17 +3,20 @@
 WiFiHelper::WiFiHelper(
     const char *ssid,
     const char *password,
+    RumpshiftLogger *logger,
     unsigned int portTCP,
     unsigned int portUDP)
     : _ssid(ssid),
       _password(password),
+      _logger(logger),
       _portTCP(portTCP),
       _portUDP(portUDP),
       _server(portTCP) {}
 
 void WiFiHelper::begin()
 {
-    Serial.println("[WiFiHelper] Starting WiFi setup...");
+    if (_logger)
+        _logger->info("[WiFiHelper] Starting WiFi setup...");
 
     scanNetworks();
     connectWiFi();
@@ -27,7 +30,8 @@ void WiFiHelper::begin()
     }
     else
     {
-        Serial.println("[WiFiHelper] ERROR: Failed to connect.");
+        if (_logger)
+            _logger->info("[WiFiHelper] ERROR: Failed to connect.");
     }
 }
 
@@ -39,7 +43,8 @@ void WiFiHelper::maintainConnection()
     {
         if (WiFi.status() != WL_CONNECTED)
         {
-            Serial.println("[WiFiHelper] WiFi disconnected. Reconnecting...");
+            if (_logger)
+                _logger->info("[WiFiHelper] WiFi disconnected. Reconnecting...");
             reconnectWiFi();
         }
         _lastStatusCheck = now;
@@ -50,7 +55,8 @@ void WiFiHelper::maintainConnection()
         _client = _server.available();
         if (_client)
         {
-            Serial.println("[WiFiHelper] New client connected.");
+            if (_logger)
+                _logger->info("[WiFiHelper] New client connected.");
         }
     }
 
@@ -67,7 +73,8 @@ void WiFiHelper::maintainConnection()
 
 void WiFiHelper::scanNetworks()
 {
-    Serial.println("[WiFiHelper] Scanning for networks...");
+    if (_logger)
+        _logger->info("[WiFiHelper] Scanning for networks...");
     int n = WiFi.scanNetworks();
     for (int i = 0; i < n; i++)
     {
@@ -75,7 +82,8 @@ void WiFiHelper::scanNetworks()
         Serial.print(WiFi.SSID(i));
         Serial.print(" (");
         Serial.print(WiFi.RSSI(i));
-        Serial.println(" dBm)");
+        if (_logger)
+            _logger->info(" dBm)");
     }
 }
 
@@ -89,7 +97,8 @@ void WiFiHelper::connectWiFi()
         Serial.print(".");
         attempts++;
     }
-    Serial.println();
+    if (_logger)
+        _logger->info("Connected!");
 }
 
 void WiFiHelper::reconnectWiFi()
@@ -104,38 +113,49 @@ void WiFiHelper::printStatus()
     switch (WiFi.status())
     {
     case WL_IDLE_STATUS:
-        Serial.println("WL_IDLE_STATUS");
+        if (_logger)
+            _logger->info("WL_IDLE_STATUS");
         break;
     case WL_NO_SSID_AVAIL:
-        Serial.println("WL_NO_SSID_AVAIL");
+        if (_logger)
+            _logger->info("WL_NO_SSID_AVAIL");
         break;
     case WL_CONNECTED:
-        Serial.println("WL_CONNECTED");
+        if (_logger)
+            _logger->info("WL_CONNECTED");
         break;
     case WL_CONNECT_FAILED:
-        Serial.println("WL_CONNECT_FAILED");
+        if (_logger)
+            _logger->info("WL_CONNECT_FAILED");
         break;
     case WL_CONNECTION_LOST:
-        Serial.println("WL_CONNECTION_LOST");
+        if (_logger)
+            _logger->info("WL_CONNECTION_LOST");
         break;
     case WL_DISCONNECTED:
-        Serial.println("WL_DISCONNECTED");
+        if (_logger)
+            _logger->info("WL_DISCONNECTED");
         break;
     default:
-        Serial.println("Unknown WiFi status");
+        if (_logger)
+            _logger->info("Unknown WiFi status");
     }
 }
 
 void WiFiHelper::printIPDetails()
 {
     Serial.print("[WiFiHelper] IP: ");
-    Serial.println(WiFi.localIP());
+    if (_logger)
+        _logger->info(WiFi.localIP());
     Serial.print("  RSSI: ");
-    Serial.println(WiFi.RSSI());
+    if (_logger)
+        _logger->info(WiFi.RSSI());
     Serial.print("  Gateway: ");
-    Serial.println(WiFi.gatewayIP());
+    if (_logger)
+        _logger->info(WiFi.gatewayIP());
     Serial.print("  Subnet: ");
-    Serial.println(WiFi.subnetMask());
+    if (_logger)
+        _logger->info(WiFi.subnetMask());
 }
 
 WiFiClient WiFiHelper::getClient()
