@@ -1,0 +1,12 @@
+{
+    "name": "UserSelector",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Chuck Thomas",
+            "email": "chuckthemole@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "dependencies": []
+}

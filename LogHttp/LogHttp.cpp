@@ -1,11 +1,16 @@
 #include "LogHttp.h"
+#include <EEPROM.h>
 
-LogHttp::LogHttp()
+#define EEPROM_SIZE 512 // Adjust if your Uno R4 has more EEPROM
+static const char LOG_QUEUE_TXT[] = "/logqueue.txt";
+static const int LOG_QUEUE_ADDR = 0; // starting address for log queue
+
+LogHttp::LogHttp() : _queue(10)
 {
     // empty
 }
 
-LogHttp::LogHttp(const String &host, uint16_t port) : _host(host), _port(port)
+LogHttp::LogHttp(const String &host, uint16_t port) : _host(host), _port(port), _queue(10)
 {
     // lazy init _httpClient in log()
 }
@@ -54,7 +59,44 @@ void LogHttp::cleanup()
     }
 }
 
-bool LogHttp::log(const String &message)
+void LogHttp::log(const String &message)
+{
+    _queue.push(message);
+    this->processQueue();
+}
+
+void LogHttp::processQueue()
+{
+    if (!_wifiClient.connected())
+    {
+        // Could attempt WiFi reconnect here if needed
+        return;
+    }
+
+    // Send RAM queue first
+    while (!_queue.isEmpty())
+    {
+        String msg = _queue.peek();
+        if (!sendHttp(msg))
+        {
+            saveToStorage(msg); // store if send fails
+            break;              // stop trying this cycle
+        }
+        _queue.pop();
+    }
+
+    // Then flush any stored messages
+    loadFromStorage();
+    while (!_queue.isEmpty())
+    {
+        String msg = _queue.peek();
+        if (!sendHttp(msg))
+            break;
+        _queue.pop();
+    }
+}
+
+bool LogHttp::sendHttp(const String &message)
 {
     if (_host.length() == 0)
     {
@@ -85,7 +127,6 @@ bool LogHttp::log(const String &message)
     }
     else if (status == HTTP_ERROR_API)
     {
-
     }
     else if (status == HTTP_ERROR_TIMED_OUT)
     {
@@ -110,5 +151,73 @@ bool LogHttp::log(const String &message)
         Serial.print("LogHttp failed, status code: ");
         Serial.println(status);
         return false;
+    }
+}
+
+void LogHttp::saveToStorage(const String &message)
+{
+    // Read existing data
+    String stored;
+    for (int i = 0; i < EEPROM_SIZE; i++)
+    {
+        char c = EEPROM.read(i);
+        if (c == 0xFF || c == '\0')
+            break; // end of stored data
+        stored += c;
+    }
+
+    if (stored.length() > 0)
+    {
+        stored += '\n';
+    }
+    stored += message;
+
+    // Truncate if too long
+    if (stored.length() > EEPROM_SIZE - 1)
+    {
+        stored = stored.substring(stored.length() - (EEPROM_SIZE - 1));
+    }
+
+    // Write back to EEPROM
+    for (int i = 0; i < stored.length(); i++)
+    {
+        EEPROM.update(i, stored[i]);
+    }
+    EEPROM.update(stored.length(), '\0'); // null-terminate
+}
+
+void LogHttp::loadFromStorage()
+{
+    String stored;
+    for (int i = 0; i < EEPROM_SIZE; i++)
+    {
+        char c = EEPROM.read(i);
+        if (c == 0xFF || c == '\0')
+            break;
+        stored += c;
+    }
+
+    if (stored.length() == 0)
+        return;
+
+    int start = 0;
+    int end = stored.indexOf('\n');
+    while (end != -1)
+    {
+        String line = stored.substring(start, end);
+        if (line.length() > 0)
+            _queue.push(line); // Changed from enqueue() to push()
+        start = end + 1;
+        end = stored.indexOf('\n', start);
+    }
+
+    String lastLine = stored.substring(start);
+    if (lastLine.length() > 0)
+        _queue.push(lastLine);
+
+    // Clear EEPROM after loading
+    for (int i = 0; i < EEPROM_SIZE; i++)
+    {
+        EEPROM.update(i, '\0');
     }
 }

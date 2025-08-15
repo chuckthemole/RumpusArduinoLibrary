@@ -4,25 +4,29 @@
 #include <Arduino.h>
 #include <WiFiClient.h>
 #include <ArduinoHttpClient.h>
+#include <QueueArray.h> // Add a simple queue library
 
 class LogHttp
 {
 public:
-    // Ctors
-    LogHttp(); // empty constructor, must set host/port later
+    LogHttp();
     LogHttp(const String &host, uint16_t port = 80);
 
-    // Setup methods for chaining
     LogHttp &setHost(const String &host);
     LogHttp &setPort(uint16_t port);
     LogHttp &setPath(const String &path);
     LogHttp &setContentType(const String &contentType);
 
-    // Initialize client (optional, called in log() if needed)
     void begin();
 
-    // Send log message, returns true if HTTP status 2xx
-    bool log(const String &message);
+    // Non-blocking log: enqueue message
+    void log(const String &message);
+
+    // Must be called in loop(): processes queue and retries failed messages
+    void processQueue();
+
+    // Optional: clear flash storage queue
+    void clearStorage();
 
 private:
     String _host;
@@ -33,7 +37,12 @@ private:
     WiFiClient _wifiClient;
     HttpClient *_httpClient = nullptr;
 
+    QueueArray<String> _queue; // RAM queue for messages
+
     void cleanup();
+    bool sendHttp(const String &message);      // send a single message
+    void saveToStorage(const String &message); // save message if offline
+    void loadFromStorage();                    // load stored messages into queue
 };
 
 #endif
