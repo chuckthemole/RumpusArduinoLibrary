@@ -231,7 +231,6 @@ case $COMMAND in
         PROJECT_NAME="${ARGS[0]}"
         shift
 
-
         BOARD="$DEFAULT_BOARD"
         PLATFORM="$DEFAULT_PLATFORM"
         FRAMEWORK="$DEFAULT_FRAMEWORK"
@@ -258,12 +257,6 @@ case $COMMAND in
             esac
         done
 
-        if [ -z "$PROJECT_NAME" ]; then
-            echo -e "${RED}Please specify a project name.${NC}"
-            echo "Example: $0 new my_project"
-            exit 1
-        fi
-
         echo -e "${BLUE}Creating new PlatformIO project: ${GREEN}$PROJECT_NAME${NC}"
         echo -e "${BLUE}Board:${NC} $BOARD  ${BLUE}Platform:${NC} $PLATFORM  ${BLUE}Framework:${NC} $FRAMEWORK"
 
@@ -272,9 +265,39 @@ case $COMMAND in
         pio project init --board "$BOARD" --project-option="platform=$PLATFORM" --project-option="framework=$FRAMEWORK"
 
         echo -e "${GREEN}Project initialized in ./$PROJECT_NAME${NC}"
+
+        # Ask about common.ini setup
+        read -p "Would you like to create a common.ini for RumpusArduinoLibrary support? (y/n): " create_common
+        if [[ "$create_common" =~ ^[Yy]$ ]]; then
+            read -p "Enter full path to your RumpusArduinoLibrary/libraries directory: " rumpus_path
+            read -p "Enter Arduino upload port (leave empty to auto-detect later): " upload_port
+
+            # Write common.ini
+            # Write common.ini
+cat <<EOF > ../common.ini
+[env]
+lib_extra_dirs = $rumpus_path
+EOF
+
+            # Only add upload_port if user entered it
+            if [ -n "$upload_port" ]; then
+                echo "upload_port = $upload_port" >> ../common.ini
+            fi
+
+            # Inject extra_configs into platformio.ini
+            echo "" >> platformio.ini
+            echo "[platformio]" >> platformio.ini
+            echo "extra_configs = ../common.ini" >> platformio.ini
+
+            echo -e "${GREEN}common.ini created at ../common.ini${NC}"
+            echo -e "${GREEN}platformio.ini updated to include extra_configs${NC}"
+        fi
+
+
         echo -e "${YELLOW}Next: cd $PROJECT_NAME && edit src/main.cpp${NC}"
         exit 0
         ;;
+
 
     *)
         echo -e "${RED}Unknown command: $COMMAND${NC}"

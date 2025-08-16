@@ -3,43 +3,98 @@
 A collection of reusable Arduino libraries for PlatformIO projects, maintained by Chuck Thomas.
 
 Current modules:
-- `WiFiHelper`: Simplifies WiFi connection setup for ESP-based boards.
-- `LogoLED`: Controls an onboard status LED or logo indicator.
+- `ArduinoBoardLED`: Simple control for onboard Arduino LEDs.
+- `CommonArduinoHelper`: Shared helper utilities for multiple projects.
+- `ElectricEye`: Light or sensor-based module (for detecting input).
+- `LCDWrapper`: Wrapper around common LCD display drivers.
+- `LogHttp`: Logging module with HTTP support.
+- `LogoLED`: Controls a logo/status LED.
+- `MessageScroller`: Scrolls text across an attached display.
+- `OTA`: Over-the-air update support.
+- `RelayTester`: Utility for testing relay modules.
+- `RumpshiftLogger`: General-purpose logging framework.
+- `UserSelector`: Abstracts user input/selection (serial, buttons, etc.).
+- `WiFiHelper`: Simplifies WiFi connection setup.
 
 ---
 
-## Installation Instructions
+## Repository Structure
 
-This library is organized as a **monorepo**. Each module (e.g. `WiFiHelper`, `LogoLED`) is a self-contained PlatformIO-compatible library stored in its own subdirectory.
+RumpusArduinoLibrary/
+├── libraries/                # All libraries live here
+│   ├── WiFiHelper/
+│   │   └── src/...
+│   └── LogoLED/
+│       └── src/...
+│
+├── examples/           # Usage demos for each library
+│   ├── WiFiHelper_Connect/
+│   └── LogoLED_Blink/
+│
+├── tests/              # Automated + visual tests
+│   ├── unit/           # Logic/unit tests (Unity)
+│   │   ├── test_WiFiHelper/
+│   │   └── test_LogoLED/
+│   │
+│   └── visual/         # Hardware/visual tests (LEDs, displays, etc.)
+│       ├── test_leds/
+│       └── test_wifi/
+│
+└── README.md
 
-Since PlatformIO does not support importing subfolders directly via `lib_deps`, you must **clone this repo and symlink** individual libraries into your project manually.
+---
 
-### Step-by-Step Setup
+## Using in PlatformIO Projects
 
-1. **Clone this repository** somewhere on your system (outside your PlatformIO project directory):
+Instead of symlinking, simply point PlatformIO at the `lib/` folder with `lib_extra_dirs`.
 
-   ```bash
-   git clone https://github.com/chuckthemole/RumpusArduinoLibrary.git
-   ```
+In your project's `platformio.ini`:
 
-2. **Create a symbolic link** from the library you want (e.g. WiFiHelper) into your PlatformIO project’s lib/ directory.
-    ```bash
-    cd your-platformio-project
-    mkdir -p lib
-    ```
-    **Symlink the WiFiHelper library**
-    ```bash
-    ln -s /full/path/to/RumpusArduinoLibrary/WiFiHelper lib/WiFiHelper
-    ```
-    **Optionally symlink LogoLED too**
-    ```bash
-    ln -s /full/path/to/RumpusArduinoLibrary/LogoLED lib/LogoLED
-    ```
+[env:uno_r4_wifi]
+platform = renesas-ra
+board = uno_r4_wifi
+framework = arduino
 
-3. **Include headers in your code** like normal:
-    ```bash
-    #include <WiFiHelper.h>
-    #include <LogoLED.h>
-    ```
+lib_extra_dirs = /Users/PATH_TO_YOUR_LIB_FOLDER/RumpusArduinoLibrary/lib
 
-1. **Compile and run your project!** PlatformIO will treat the symlinked folders as local libraries.
+Then you can include your libraries like normal:
+
+#include <WiFiHelper.h>
+#include <LogoLED.h>
+
+PlatformIO will automatically find them.
+
+---
+
+## Testing
+
+### 1. Unit Tests
+- Located in `tests/unit/`
+- Use the Unity test framework
+- Run locally (native) or on a board:
+
+pio test -e uno
+
+### 2. Visual Tests
+- Located in `tests/visual/`
+- These behave like sketches (e.g. blink an LED, print to serial)
+- Run on target hardware:
+
+pio test -e uno -f test_leds
+
+---
+
+## Examples
+- Located in `examples/`
+- Minimal usage sketches for each library
+- Recognized automatically by the Arduino IDE
+- Great for reference and demos
+
+---
+
+## Summary
+- Keep all libraries under `lib/`
+- Use `lib_extra_dirs` in PlatformIO projects to include them
+- `examples/` → usage demos
+- `tests/unit/` → automated tests
+- `tests/visual/` → hardware/manual tests
