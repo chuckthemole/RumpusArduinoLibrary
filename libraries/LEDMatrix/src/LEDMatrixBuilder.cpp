@@ -58,7 +58,7 @@ LEDMatrix *LEDMatrixBuilder::build()
     }
 
     // Stop time can be stored in wrapper or draw engine
-    display->setStopTime(_stopMs);
+    // display->setStopTime(_stopMs);
 
     return display;
 }

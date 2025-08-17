@@ -3,13 +3,15 @@
 #include <Arduino_LED_Matrix.h>
 #include "LEDMatrix.h"
 #include "RumpshiftLogger.h"
+#include "renderer/DrawEngine.h"
 
 /**
  * @brief Platform-specific implementation of LEDMatrix for Arduino.
  *
- * This wrapper only handles hardware interaction: initialization,
- * clearing, brightness, and rendering a given frame.
- * All drawing, scrolling, or text logic is handled by the DrawEngine.
+ * This wrapper handles hardware interaction: initialization, clearing,
+ * brightness, rendering frames, and drawing individual letters/numbers.
+ * All scrolling or high-level text logic can be handled by the wrapper
+ * or higher-level managers.
  */
 class LEDMatrixWrapper : public LEDMatrix
 {
@@ -49,8 +51,18 @@ public:
      */
     void setBrightness(uint8_t level) override;
 
+    /**
+     * @brief Set the default text size for drawing characters.
+     *
+     * @param size Text size enum (SMALL, MEDIUM, LARGE)
+     */
     void setTextSize(uint8_t size) override;
 
+    /**
+     * @brief Assign a DrawEngine implementation for rendering frames.
+     *
+     * @param engine Pointer to DrawEngine instance
+     */
     void setDrawEngine(DrawEngine *engine);
 
     /**
@@ -61,15 +73,56 @@ public:
      */
     String toString() const;
 
+    // --- Character/Number Drawing Methods ---
+
+    /**
+     * @brief Draw a single letter into the internal frame buffer.
+     *
+     * @param c Character to draw (A-Z)
+     * @param colOffset Column offset to start drawing
+     */
+    void drawLetter(char c, int colOffset);
+
+    /**
+     * @brief Draw a single number into the internal frame buffer.
+     *
+     * @param n Character representing number (0-9)
+     * @param colOffset Column offset to start drawing
+     */
+    void drawNumber(char n, int colOffset);
+
+    /**
+     * @brief Render a full string of text into the internal frame buffer.
+     *
+     * @param text Text to render
+     */
+    void renderText(const String &text);
+
 private:
     ArduinoLEDMatrix _matrix;                     ///< Underlying hardware object
     uint8_t _frame[Rows::EIGHT][Columns::TWELVE]; ///< Local frame buffer for the visible display
     RumpshiftLogger *_logger = nullptr;           ///< Optional logger
-    uint8_t _textSize = TextSize::MEDIUM;
-    DrawEngine *_engine;
+    uint8_t _textSize = TextSize::MEDIUM;         ///< Current text size
+    DrawEngine *_engine = nullptr;                ///< Optional engine for rendering frames
 
     /**
      * @brief Clear the internal frame buffer.
      */
     void clearFrame();
+
+    // --- Internal helpers for drawing specific letters/numbers ---
+    void drawH(int colOffset);
+    void drawE(int colOffset);
+    void drawL(int colOffset);
+    void drawO(int colOffset);
+    void draw0(int colOffset);
+    void draw1(int colOffset);
+    void draw2(int colOffset);
+    void draw3(int colOffset);
+    void draw4(int colOffset);
+    void draw5(int colOffset);
+    void draw6(int colOffset);
+    void draw7(int colOffset);
+    void draw8(int colOffset);
+    void draw9(int colOffset);
 };

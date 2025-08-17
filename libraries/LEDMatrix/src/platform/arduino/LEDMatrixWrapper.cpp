@@ -4,7 +4,7 @@
  * @brief Construct a new LEDMatrixWrapper without logger
  */
 LEDMatrixWrapper::LEDMatrixWrapper()
-    : _logger(nullptr)
+    : _logger(nullptr), _engine(nullptr)
 {
 }
 
@@ -13,7 +13,7 @@ LEDMatrixWrapper::LEDMatrixWrapper()
  * @param logger Pointer to RumpshiftLogger instance
  */
 LEDMatrixWrapper::LEDMatrixWrapper(RumpshiftLogger *logger)
-    : _logger(logger)
+    : _logger(logger), _engine(nullptr)
 {
 }
 
@@ -67,9 +67,6 @@ void LEDMatrixWrapper::setBrightness(uint8_t level)
 
     if (_logger)
         _logger->info(String("LEDMatrixWrapper: brightness set to ") + level);
-
-    if (_logger)
-        _logger->info("TODO: this is not implemented!!");
 }
 
 /**
@@ -118,4 +115,91 @@ String LEDMatrixWrapper::toString() const
         _logger->debug("LEDMatrixWrapper: toString() called");
 
     return result;
+}
+
+// --------------------------------------------
+// Letter Drawing
+// --------------------------------------------
+void LEDMatrixWrapper::drawLetter(char c, int colOffset)
+{
+    switch (c)
+    {
+    case 'H':
+        drawH(colOffset);
+        break;
+    case 'E':
+        drawE(colOffset);
+        break;
+    case 'L':
+        drawL(colOffset);
+        break;
+    case 'O':
+        drawO(colOffset);
+        break;
+    default:
+        break; // unsupported chars
+    }
+}
+
+// --------------------------------------------
+// Number Drawing
+// --------------------------------------------
+void LEDMatrixWrapper::drawNumber(char n, int colOffset)
+{
+    switch (n)
+    {
+    case '0':
+        draw0(colOffset);
+        break;
+    case '1':
+        draw1(colOffset);
+        break;
+    case '2':
+        draw2(colOffset);
+        break;
+    case '3':
+        draw3(colOffset);
+        break;
+    case '4':
+        draw4(colOffset);
+        break;
+    case '5':
+        draw5(colOffset);
+        break;
+    case '6':
+        draw6(colOffset);
+        break;
+    case '7':
+        draw7(colOffset);
+        break;
+    case '8':
+        draw8(colOffset);
+        break;
+    case '9':
+        draw9(colOffset);
+        break;
+    default:
+        break; // unsupported numbers
+    }
+}
+
+// --------------------------------------------
+// Render a full string
+// --------------------------------------------
+void LEDMatrixWrapper::renderText(const String &text)
+{
+    int colOffset = 0;
+    for (size_t i = 0; i < text.length(); i++)
+    {
+        char c = text[i];
+        if (c >= '0' && c <= '9')
+            drawNumber(c, colOffset);
+        else if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
+            drawLetter(toupper(c), colOffset);
+
+        colOffset += 4; // basic spacing; could adjust per char
+    }
+
+    // After drawing into frame buffer, optionally render
+    renderFrame(_frame);
 }
