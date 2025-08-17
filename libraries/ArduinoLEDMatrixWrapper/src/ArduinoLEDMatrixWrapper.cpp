@@ -8,6 +8,78 @@ void ArduinoLEDMatrixWrapper::begin()
     clear();
 }
 
+ArduinoLEDMatrixWrapper &ArduinoLEDMatrixWrapper::build(const String &text)
+{
+    _text = text;
+    return *this;
+}
+
+ArduinoLEDMatrixWrapper &ArduinoLEDMatrixWrapper::stop(unsigned long ms)
+{
+    _stopDuration = ms;
+    return *this;
+}
+
+ArduinoLEDMatrixWrapper &ArduinoLEDMatrixWrapper::speed(unsigned long ms)
+{
+    _speed = ms;
+    return *this;
+}
+
+ArduinoLEDMatrixWrapper &ArduinoLEDMatrixWrapper::loop(int count)
+{
+    _loopCount = count;
+    return *this;
+}
+
+void ArduinoLEDMatrixWrapper::run()
+{
+    if (_text.length() == 0)
+        return;
+
+    uint8_t fullFrame[8][128];
+    int totalCols = 0;
+
+    // Draw the text into fullFrame once
+    for (int r = 0; r < 8; r++)
+        for (int c = 0; c < 128; c++)
+            fullFrame[r][c] = 0;
+
+    for (size_t i = 0; i < _text.length(); i++)
+    {
+        char c = _text[i];
+        drawLetterToFullFrame(c, totalCols, fullFrame);
+        totalCols += getLetterWidth(c) + 1; // spacing
+    }
+
+    int loopsDone = 0;
+    while (_loopCount == -1 || loopsDone < _loopCount)
+    {
+        // Scroll left across display
+        for (int startCol = 0; startCol <= totalCols; startCol++)
+        {
+            for (int r = 0; r < 8; r++)
+            {
+                for (int c = 0; c < 12; c++)
+                {
+                    int srcCol = c + startCol;
+                    _frame[r][c] = (srcCol < 128) ? fullFrame[r][srcCol] : 0;
+                }
+            }
+            _matrix.renderBitmap(_frame, 8, 12);
+            delay(_speed);
+        }
+
+        // Pause at the end of one scroll cycle
+        if (_stopDuration > 0)
+        {
+            delay(_stopDuration);
+        }
+
+        loopsDone++;
+    }
+}
+
 void ArduinoLEDMatrixWrapper::clear()
 {
     clearFrame();
@@ -21,50 +93,7 @@ void ArduinoLEDMatrixWrapper::clearFrame()
             _frame[r][c] = 0;
 }
 
-// Draw text with automatic scrolling if it doesn't fit
-void ArduinoLEDMatrixWrapper::displayText(const String &text)
-{
-    // Build the full frame for the text
-    uint8_t fullFrame[8][128]; // supports up to 128 columns
-    int totalCols = 0;
-
-    // Clear fullFrame
-    for (int r = 0; r < 8; r++)
-        for (int c = 0; c < 128; c++)
-            fullFrame[r][c] = 0;
-
-    // Draw each letter
-    for (size_t i = 0; i < text.length(); i++)
-    {
-        char c = text[i];
-        drawLetterToFullFrame(c, totalCols, fullFrame);
-        totalCols += getLetterWidth(c) + 1; // letter width + 1 col spacing
-    }
-
-    // Scroll frame if totalCols > 12
-    if (totalCols <= 12)
-    {
-        // Just copy to visible frame
-        for (int r = 0; r < 8; r++)
-            for (int c = 0; c < totalCols; c++)
-                _frame[r][c] = fullFrame[r][c];
-        _matrix.renderBitmap(_frame, 8, 12);
-    }
-    else
-    {
-        // Scroll across the display
-        for (int startCol = 0; startCol <= totalCols - 12; startCol++)
-        {
-            for (int r = 0; r < 8; r++)
-                for (int c = 0; c < 12; c++)
-                    _frame[r][c] = fullFrame[r][c + startCol];
-            _matrix.renderBitmap(_frame, 8, 12);
-            delay(200); // adjust scroll speed
-        }
-    }
-}
-
-// Draw a single letter into the fullFrame at column offset
+// Draw a single letter into the fullFrame
 void ArduinoLEDMatrixWrapper::drawLetterToFullFrame(char c, int colOffset, uint8_t fullFrame[8][128])
 {
     switch (c)
@@ -86,17 +115,13 @@ void ArduinoLEDMatrixWrapper::drawLetterToFullFrame(char c, int colOffset, uint8
     }
 }
 
-// Widths for each letter
 int ArduinoLEDMatrixWrapper::getLetterWidth(char c)
 {
     switch (c)
     {
     case 'H':
-        return 3;
     case 'E':
-        return 3;
     case 'L':
-        return 3;
     case 'O':
         return 3;
     default:
@@ -104,15 +129,14 @@ int ArduinoLEDMatrixWrapper::getLetterWidth(char c)
     }
 }
 
-// Letter drawing functions for fullFrame
 void ArduinoLEDMatrixWrapper::drawHFull(int col, uint8_t fullFrame[8][128])
 {
     for (int r = 0; r < 8; r++)
     {
         fullFrame[r][col] = 1;
-        fullFrame[r][col + 2] = 1; // right vertical
+        fullFrame[r][col + 2] = 1;
     }
-    fullFrame[3][col + 1] = 1; // middle horizontal
+    fullFrame[3][col + 1] = 1;
 }
 
 void ArduinoLEDMatrixWrapper::drawEFull(int col, uint8_t fullFrame[8][128])
@@ -149,9 +173,9 @@ String ArduinoLEDMatrixWrapper::toString()
     {
         for (int c = 0; c < 12; c++)
         {
-            result += (_frame[r][c] ? "#" : " "); // "#" = lit, " " = off
+            result += (_frame[r][c] ? "#" : " ");
         }
-        result += "\n"; // new line for each row
+        result += "\n";
     }
     return result;
 }

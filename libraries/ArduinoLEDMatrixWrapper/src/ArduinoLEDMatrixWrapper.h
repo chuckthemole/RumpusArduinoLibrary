@@ -7,18 +7,34 @@ class ArduinoLEDMatrixWrapper
 public:
     ArduinoLEDMatrixWrapper();
 
-    void begin();
+    // Builder entrypoint
+    ArduinoLEDMatrixWrapper &build(const String &text);
+
+    // Chainable config
+    ArduinoLEDMatrixWrapper &stop(unsigned long ms);
+    ArduinoLEDMatrixWrapper &speed(unsigned long ms);
+    ArduinoLEDMatrixWrapper &loop(int count); // -1 = infinite
+
+    // Run scrolling
+    void run();
+    void begin(); // legacy immediate start (no chain)
+
+    // Utility
     void clear();
-    void displayText(const String &text);
     String toString();
 
 private:
     ArduinoLEDMatrix _matrix;
     uint8_t _frame[8][12];
 
+    String _text = "";
+    unsigned long _stopDuration = 0;
+    unsigned long _speed = 200; // default ms per shift
+    int _loopCount = -1;        // -1 = infinite
+
     void clearFrame();
 
-    // Full-frame helper for scrolling
+    // For full scroll rendering
     void drawLetterToFullFrame(char c, int colOffset, uint8_t fullFrame[8][128]);
     int getLetterWidth(char c);
     void drawHFull(int col, uint8_t fullFrame[8][128]);
@@ -26,7 +42,7 @@ private:
     void drawLFull(int col, uint8_t fullFrame[8][128]);
     void drawOFull(int col, uint8_t fullFrame[8][128]);
 
-    // Legacy letter drawing (optional if you want to keep)
+    // Legacy drawing (for direct displayText)
     void drawLetter(char c, int col);
     void drawH(int col);
     void drawE(int col);
