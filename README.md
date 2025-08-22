@@ -14,7 +14,7 @@ Current modules:
 - `RelayTester`: Utility for testing relay modules.
 - `RumpshiftLogger`: General-purpose logging framework.
 - `UserSelector`: Abstracts user input/selection (serial, buttons, etc.).
-- `WiFiHelper`: Simplifies WiFi connection setup.
+- `WiFiNetworkManager`: Simplifies WiFi connection setup.
 
 ---
 
@@ -22,18 +22,18 @@ Current modules:
 
 RumpusArduinoLibrary/
 ├── libraries/                # All libraries live here
-│   ├── WiFiHelper/
+│   ├── WiFiNetworkManager/
 │   │   └── src/...
 │   └── LogoLED/
 │       └── src/...
 │
 ├── examples/           # Usage demos for each library
-│   ├── WiFiHelper_Connect/
+│   ├── WiFiNetworkManager_Connect/
 │   └── LogoLED_Blink/
 │
 ├── tests/              # Automated + visual tests
 │   ├── unit/           # Logic/unit tests (Unity)
-│   │   ├── test_WiFiHelper/
+│   │   ├── test_WiFiNetworkManager/
 │   │   └── test_LogoLED/
 │   │
 │   └── visual/         # Hardware/visual tests (LEDs, displays, etc.)
@@ -59,7 +59,7 @@ lib_extra_dirs = /Users/PATH_TO_YOUR_LIB_FOLDER/RumpusArduinoLibrary/lib
 
 Then you can include your libraries like normal:
 
-#include <WiFiHelper.h>
+#include <WiFiNetworkManager.h>
 #include <LogoLED.h>
 
 PlatformIO will automatically find them.
