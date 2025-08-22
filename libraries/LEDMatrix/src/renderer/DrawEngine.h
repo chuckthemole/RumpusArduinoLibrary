@@ -1,40 +1,54 @@
 #pragma once
 #include <Arduino.h>
 #include "LEDMatrix.h"
+#include "platform/arduino/LEDMatrixWrapper.h"
 #include "RumpshiftLogger.h"
+#include "font/Font.h"
 
+/**
+ * @brief Base class for rendering text and shapes onto an LEDMatrix.
+ *
+ * DrawEngine handles higher-level concepts such as text rendering,
+ * while delegating pixel-level drawing to the platform-specific
+ * LEDMatrix implementation.
+ */
 class DrawEngine
 {
 public:
+    /**
+     * @brief Construct a new DrawEngine instance
+     * @param matrix Pointer to an LEDMatrix implementation
+     * @param logger Optional pointer to RumpshiftLogger
+     */
+    DrawEngine(LEDMatrixWrapper *matrix, RumpshiftLogger *logger = nullptr);
+
     virtual ~DrawEngine() = default;
 
     /**
-     * @brief Construct a new DrawEngine instance
-     * @param logger Optional pointer to RumpshiftLogger
-     */
-    DrawEngine(RumpshiftLogger *logger = nullptr) : _logger(logger) {}
-
-    /**
-     * @brief Initialize the hardware. Default does nothing.
+     * @brief Initialize hardware and clear display
      */
     virtual void begin();
 
     /**
-     * @brief Render a prebuilt frame to the hardware.
-     * Must be overridden by subclasses.
+     * @brief Draw a string using the active font
+     * @param text      C-string to draw
+     * @param colOffset Starting column position
      */
-    virtual void renderFrame(const uint8_t frame[LEDMatrix::Rows::EIGHT][LEDMatrix::Columns::TWELVE]) = 0;
+    virtual void drawText(const char *text, int colOffset = 0);
 
     /**
-     * @brief Set the brightness for the hardware. Default does nothing.
+     * @brief Render the current framebuffer to hardware
      */
-    virtual void setBrightness(uint8_t level);
+    virtual void render();
 
     /**
-     * @brief Optional: provide a logger after construction
+     * @brief Assign a font for text rendering
+     * @param font Pointer to a font implementation
      */
-    virtual void setLogger(RumpshiftLogger *logger) { _logger = logger; }
+    void setFont(const Font *font);
 
 protected:
-    RumpshiftLogger *_logger = nullptr;
+    LEDMatrixWrapper *_matrix = nullptr;       ///< Hardware interface
+    const Font *_font = nullptr;        ///< Active font
+    RumpshiftLogger *_logger = nullptr; ///< Optional logger
 };

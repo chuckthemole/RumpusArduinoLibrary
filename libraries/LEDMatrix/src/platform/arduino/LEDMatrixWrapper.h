@@ -3,7 +3,9 @@
 #include <Arduino_LED_Matrix.h>
 #include "LEDMatrix.h"
 #include "RumpshiftLogger.h"
-#include "renderer/DrawEngine.h"
+#include "font/Font.h"
+
+class DrawEngine;
 
 /**
  * @brief Platform-specific implementation of LEDMatrix for Arduino.
@@ -98,12 +100,16 @@ public:
      */
     void renderText(const String &text);
 
+    void setFont(const Font *font); ///< Set current font for text rendering
+    void drawChar(char c, int colOffset);
+
 private:
     ArduinoLEDMatrix _matrix;                     ///< Underlying hardware object
     uint8_t _frame[Rows::EIGHT][Columns::TWELVE]; ///< Local frame buffer for the visible display
     RumpshiftLogger *_logger = nullptr;           ///< Optional logger
     uint8_t _textSize = TextSize::MEDIUM;         ///< Current text size
     DrawEngine *_engine = nullptr;                ///< Optional engine for rendering frames
+    const Font *_font = nullptr;                  ///< Active font (default can be set in begin())
 
     /**
      * @brief Clear the internal frame buffer.
@@ -111,10 +117,34 @@ private:
     void clearFrame();
 
     // --- Internal helpers for drawing specific letters/numbers ---
-    void drawH(int colOffset);
+    void drawA(int colOffset);
+    void drawB(int colOffset);
+    void drawC(int colOffset);
+    void drawD(int colOffset);
     void drawE(int colOffset);
+    void drawF(int colOffset);
+    void drawG(int colOffset);
+    void drawH(int colOffset);
+    void drawI(int colOffset);
+    void drawJ(int colOffset);
+    void drawK(int colOffset);
     void drawL(int colOffset);
+    void drawM(int colOffset);
+    void drawN(int colOffset);
     void drawO(int colOffset);
+    void drawP(int colOffset);
+    void drawQ(int colOffset);
+    void drawR(int colOffset);
+    void drawS(int colOffset);
+    void drawT(int colOffset);
+    void drawU(int colOffset);
+    void drawV(int colOffset);
+    void drawW(int colOffset);
+    void drawX(int colOffset);
+    void drawY(int colOffset);
+    void drawZ(int colOffset);
+
+    // Numbers
     void draw0(int colOffset);
     void draw1(int colOffset);
     void draw2(int colOffset);

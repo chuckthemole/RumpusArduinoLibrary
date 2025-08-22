@@ -1,17 +1,54 @@
 #include "DrawEngine.h"
 
-// No need for a separate .cpp for constructors or inline methods
-// Everything simple is already in the header
+DrawEngine::DrawEngine(LEDMatrixWrapper *matrix, RumpshiftLogger *logger)
+    : _matrix(matrix), _logger(logger) {}
 
-// If you really want to provide a separate implementation file:
 void DrawEngine::begin()
 {
-    if (_logger)
-        _logger->info("DrawEngine: begin() called");
+    if (_matrix)
+    {
+        _matrix->begin();
+        _matrix->clear();
+        if (_logger)
+            _logger->info("DrawEngine: initialized and display cleared");
+    }
 }
 
-void DrawEngine::setBrightness(uint8_t level)
+void DrawEngine::drawText(const char *text, int colOffset)
 {
+    if (!_matrix || !_font)
+        return;
+
+    int cursorX = colOffset;
+
+    while (*text)
+    {
+        Glyph g;
+        if (_font->getGlyph(*text, g))
+        {
+            _matrix->drawChar(*text, cursorX); // delegate pixel drawing
+            cursorX += g.xAdvance;             // move cursor by glyph width
+        }
+        text++;
+    }
+
     if (_logger)
-        _logger->info("DrawEngine: setBrightness() called with level " + String(level));
+        _logger->debug("DrawEngine: text drawn");
+}
+
+void DrawEngine::render()
+{
+    if (_matrix)
+    {
+        _matrix->renderFrame(nullptr); // TODO: fix this, maybe something like _matrix->getFrame() as the param
+        if (_logger)
+            _logger->debug("DrawEngine: frame rendered");
+    }
+}
+
+void DrawEngine::setFont(const Font *font)
+{
+    _font = font;
+    if (_logger)
+        _logger->info("DrawEngine: font set");
 }

@@ -1,4 +1,6 @@
 #include "LEDMatrixWrapper.h"
+#include <avr/pgmspace.h>
+#include "renderer/DrawEngine.h"
 
 /**
  * @brief Construct a new LEDMatrixWrapper without logger
@@ -202,4 +204,59 @@ void LEDMatrixWrapper::renderText(const String &text)
 
     // After drawing into frame buffer, optionally render
     renderFrame(_frame);
+}
+
+#include "LEDMatrixWrapper.h"
+#include <avr/pgmspace.h>
+
+void LEDMatrixWrapper::setFont(const Font *font)
+{
+    _font = font;
+    if (_logger)
+        _logger->info("LEDMatrixWrapper: font set");
+}
+
+/**
+ * @brief Draw a single character from the active font into the framebuffer
+ *
+ * @param c         ASCII character to draw
+ * @param colOffset Column offset (x position) where to start drawing
+ */
+void LEDMatrixWrapper::drawChar(char c, int colOffset)
+{
+    if (!_font)
+    {
+        if (_logger)
+            _logger->warn("LEDMatrixWrapper: no font set");
+        return;
+    }
+
+    Glyph glyph;
+    if (!_font->getGlyph(c, glyph) || !glyph.bitmap)
+    {
+        if (_logger)
+            _logger->warn(String("LEDMatrixWrapper: no glyph for '") + c + "'");
+        return;
+    }
+
+    // Loop through each column of the glyph
+    for (int col = 0; col < glyph.width; col++)
+    {
+        uint8_t colBits = pgm_read_byte(glyph.bitmap + col);
+
+        for (int row = 0; row < glyph.height; row++)
+        {
+            bool pixelOn = colBits & (1 << row);
+            if (pixelOn)
+            {
+                // Write into internal frame buffer at proper offset
+                int x = colOffset + col + glyph.xOffset;
+                int y = row + glyph.yOffset;
+                if (x >= 0 && x < Columns::TWELVE && y >= 0 && y < Rows::EIGHT)
+                {
+                    _frame[y][x] = 1;
+                }
+            }
+        }
+    }
 }

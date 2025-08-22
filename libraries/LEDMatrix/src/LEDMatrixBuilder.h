@@ -9,8 +9,8 @@
  * @brief Builder for constructing and configuring LEDMatrix instances.
  *
  * Provides a fluent interface for setting text size, brightness, stop time,
- * draw engine, and optional logging. Handles platform-specific wrapper creation
- * internally.
+ * scroll speed, loop count, draw engine, optional logging, and text content.
+ * Handles platform-specific wrapper creation internally.
  */
 class LEDMatrixBuilder
 {
@@ -40,6 +40,20 @@ public:
     LEDMatrixBuilder &stop(uint32_t ms);
 
     /**
+     * @brief Set the scroll speed in milliseconds per column shift
+     * @param ms Scroll speed in milliseconds
+     * @return Reference to builder for chaining
+     */
+    LEDMatrixBuilder &speed(uint32_t ms);
+
+    /**
+     * @brief Set the number of times the message will loop
+     * @param count Number of loops (-1 = infinite)
+     * @return Reference to builder for chaining
+     */
+    LEDMatrixBuilder &loop(int count);
+
+    /**
      * @brief Assign a logger to the LED matrix.
      * @param logger Pointer to RumpshiftLogger instance
      * @return Reference to builder for chaining
@@ -54,20 +68,29 @@ public:
     LEDMatrixBuilder &withDrawEngine(DrawEngine *engine);
 
     /**
-     * @brief Build and return a fully-configured LEDMatrix instance.
+     * @brief Assign the text to display on the LED matrix.
+     * @param text Message to display
+     * @return Reference to builder for chaining
+     */
+    LEDMatrixBuilder &withText(const String &text);
+
+    /**
+     * @brief Build and return a fully-configured LEDMatrixWrapper instance.
      *
-     * The LEDMatrixWrapper is allocated on the heap and returned as a pointer.
      * The caller is responsible for managing the lifetime of the object
      * (i.e., deleting it when no longer needed).
      *
-     * @return Pointer to a fully-configured LEDMatrix instance
+     * @return Pointer to a fully-configured LEDMatrixWrapper
      */
-    LEDMatrix *build();
+    LEDMatrixWrapper *build();
 
 private:
-    uint8_t _textSize;
-    uint8_t _brightness;
-    uint32_t _stopMs;
-    RumpshiftLogger *_logger;
-    DrawEngine *_drawEngine;
+    uint8_t _textSize = LEDMatrix::TextSize::MEDIUM;
+    uint8_t _brightness = 255;
+    uint32_t _stopMs = 0;
+    uint32_t _speed = 200; // default scroll speed
+    int _loopCount = -1;   // default infinite
+    String _text = "";     // message to display
+    RumpshiftLogger *_logger = nullptr;
+    DrawEngine *_drawEngine = nullptr;
 };
