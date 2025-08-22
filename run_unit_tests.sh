@@ -15,7 +15,7 @@ for env_dir in "$TEST_DIR"/*_unit; do
 done
 
 # Discover all environments from platformio.ini (simplified example)
-ALL_ENVS=("RumpshiftLogger_unit" "WiFiHelper_unit") # update as needed
+ALL_ENVS=("RumpshiftLogger_unit" "WiFiNetworkManager_unit") # update as needed
 
 echo -e "\nSelect test mode:"
 echo "1) Run all unit tests (no upload)"

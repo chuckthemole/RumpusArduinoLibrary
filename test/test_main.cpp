@@ -2,7 +2,7 @@
 #include <unity.h>
 
 #include "RumpshiftLogger_unit/test_logger.cpp"
-#include "WiFiHelper_unit/test_wifi.cpp"
+#include "WiFiNetworkManager_unit/test_wifi.cpp"
 
 void setup()
 {
