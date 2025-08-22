@@ -1,0 +1,36 @@
+{
+    "name": "APIClient",
+    "version": "0.1.0",
+    "description": "An abstract API client library for Arduino to fetch JSON data from APIs like Notion and populate it into applications.",
+    "keywords": [
+        "arduino",
+        "http",
+        "json",
+        "api",
+        "notion"
+    ],
+    "authors": [
+        {
+            "name": "Chuck Thomas",
+            "email": "chuckthemole@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": "*",
+    "dependencies": [
+        {
+            "name": "ArduinoJson",
+            "version": "^6.21.2"
+        },
+        {
+            "name": "ArduinoHttpClient",
+            "version": "^0.4.0"
+        }
+    ],
+    "examples": [
+        "examples/*"
+    ]
+}
