@@ -1,0 +1,35 @@
+{
+    "name": "RumpusJsonDocument",
+    "version": "1.0.0",
+    "description": "Wrapper around ArduinoJson with Rumpus extensions\nProvides a common interface for JSON operations, with ArduinoJson backend support. Requires a compiler with C++11 support (Arduino IDE 1.6.6+ or PlatformIO with -std=gnu++11).",
+    "keywords": [
+        "arduinojson",
+        "json",
+        "document",
+        "wrapper"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chuckthemole/RumpusArduinoLibrary"
+    },
+    "authors": [
+        {
+            "name": "Charles Thomas",
+            "email": "chuckthemole@gmail.com",
+            "maintainer": true
+        }
+    ],
+    "frameworks": "arduino",
+    "platforms": "*",
+    "dependencies": [
+        {
+            "name": "ArduinoJson",
+            "version": "^6.21.2"
+        }
+    ],
+    "export": {
+        "include": [
+            "src"
+        ]
+    }
+}

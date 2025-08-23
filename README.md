@@ -44,6 +44,54 @@ RumpusArduinoLibrary/
 
 ---
 
+## Configuration and Setup
+
+### PlatformIO Environment Configuration
+
+You can create a `common.ini` file to centralize your PlatformIO project settings. This is particularly helpful for specifying library paths, upload ports, and compiler flags. C++11 is recommended to ensure full compatibility with the libraries in this repository.
+
+```ini
+[env:uno_r4_wifi]
+lib_extra_dirs = ~/Projects/Mountjoy/RumpusArduinoLibrary/libraries
+upload_port = /your/path/
+
+; Ensure the compiler uses C++11, some libs require C++11
+build_unflags = -std=gnu++98
+build_flags = -std=gnu++11
+```
+
+> Note: Adjust `lib_extra_dirs` and `upload_port` to match your system and board.
+
+---
+
+### PlatformIO Project Configuration Header
+
+Include a `config.h` in your project’s `include` folder. This header centralizes configuration options for WiFi, logging, and API details. Replace the placeholder values with your specific project settings.
+
+```cpp
+// config.h
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define WIFI_SSID ""        // Your WiFi SSID
+#define WIFI_PASS ""        // Your WiFi password
+#define BAUD_RATE 9600      // Serial baud rate
+#define LAN_IP ""           // Server IP for logging
+#define API_PATH ""         // Path on server for API requests
+#define SOURCE ""           // Source name for logging
+#define TARGET_API ""       // Target API identifier
+#define DB_ID ""            // Database or page ID
+#define PORT 8000           // Default server port
+
+#define DEBUG_LEVEL LOG_LEVEL_DEBUG  // Logging verbosity level
+
+#endif
+```
+
+> 💡 Place `config.h` inside the `include` folder of your PlatformIO project to ensure it is available globally in your source code.
+
+---
+
 ## Using in PlatformIO Projects
 
 Instead of symlinking, simply point PlatformIO at the `lib/` folder with `lib_extra_dirs`.
