@@ -1,11 +1,11 @@
 #include "RumpshiftLogger.h"
 
-RumpshiftLogger::RumpshiftLogger(uint32_t baudRate, LogLevel level, bool color)
-    : baudRate(baudRate), logLevel(level), inColor(color) {}
+RumpshiftLogger::RumpshiftLogger(uint32_t baudRate, LogLevel level, bool inColor)
+    : _baudRate(baudRate), _logLevel(level), _inColor(inColor) {}
 
 void RumpshiftLogger::begin()
 {
-    Serial.begin(baudRate);
+    Serial.begin(_baudRate);
     while (!Serial)
     {
         ; // Wait for Serial connection (optional, useful for boards with native USB)
@@ -14,7 +14,7 @@ void RumpshiftLogger::begin()
 
 void RumpshiftLogger::setLevel(LogLevel level)
 {
-    logLevel = level;
+    _logLevel = level;
 }
 
 void RumpshiftLogger::error(const String &msg)
@@ -39,12 +39,11 @@ void RumpshiftLogger::debug(const String &msg)
 
 void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
 {
-    if (level <= logLevel && logLevel != LOG_LEVEL_NONE)
+    if (level <= _logLevel && _logLevel != LOG_LEVEL_NONE)
     {
-        if (inColor)
+        if (_inColor)
         {
             const char *color = "";
-
             switch (level)
             {
             case LOG_LEVEL_ERROR:
@@ -63,13 +62,15 @@ void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
                 color = COLOR_RESET;
                 break;
             }
-
             Serial.print(color);
         }
+
         Serial.print("[");
         Serial.print(prefix);
         Serial.print("] ");
         Serial.println(msg);
-        Serial.print(COLOR_RESET); // Reset after each message
+
+        if (_inColor)
+            Serial.print(COLOR_RESET); // Only reset if we used a color
     }
 }

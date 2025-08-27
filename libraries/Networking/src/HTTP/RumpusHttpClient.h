@@ -379,7 +379,7 @@ private:
             _logger->debug("[RumpusHttpClient] endRequest() called");
 
         _lastStatusCode = _httpClient->responseStatusCode();
-        _debugHttpClientStatusCode(); // TODO: this should not execute if not in DEBUG mode. 
+        _debugHttpClientStatusCode(); // TODO: this should not execute if not in DEBUG mode.
 
         if (_logger)
             _logger->info("[RumpusHttpClient] HTTP " + method + " " + path +
@@ -405,6 +405,11 @@ private:
     {
         if (_logger)
             _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] debug client status code start.");
+
+        String payload = _httpClient->readString();
+        if (_logger)
+            _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] Raw response: " + payload);
+
         String reason;
         switch (_lastStatusCode)
         {
@@ -434,7 +439,7 @@ private:
         }
 
         if (_logger)
-            _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] Reason: " + reason );
+            _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] Reason: " + reason);
     }
 };
 

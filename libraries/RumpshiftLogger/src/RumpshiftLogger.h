@@ -39,7 +39,10 @@ public:
      * @param baudRate Baud rate for Serial communication (default: 9600).
      * @param level Initial logging level (default: LOG_LEVEL_INFO).
      */
-    RumpshiftLogger(uint32_t baudRate = 9600, LogLevel level = LOG_LEVEL_INFO, bool color = false);
+    RumpshiftLogger(
+        uint32_t baudRate = 9600,
+        LogLevel level = LOG_LEVEL_INFO,
+        bool inColor = false);
 
     /**
      * @brief Initialize Serial communication for logging.
@@ -90,9 +93,9 @@ public:
     }
 
 private:
-    uint32_t baudRate; ///< Serial baud rate.
-    LogLevel logLevel; ///< Current logging level.
-    bool inColor;      ///< Logs in color.
+    uint32_t _baudRate; ///< Serial baud rate.
+    LogLevel _logLevel; ///< Current logging level.
+    bool _inColor;      ///< Logs in color.
 
     /**
      * @brief Internal log function to handle message printing.
