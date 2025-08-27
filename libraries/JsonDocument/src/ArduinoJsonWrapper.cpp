@@ -48,25 +48,87 @@ void ArduinoJsonWrapper::set(const char *key, int value)
 }
 
 /**
- * @brief Create a nested object for a given key.
+ * @brief Set an RumpusJsonDocument value for a key.
+ */
+void ArduinoJsonWrapper::set(const char *key, RumpusJsonDocument *value)
+{
+    if (!value)
+        return;
+
+    String nestedJson = value->serialize();
+    DynamicJsonDocument temp(nestedJson.length() + 1); // TODO: I should probably be getting this size from 'value' var.
+    DeserializationError err = deserializeJson(temp, nestedJson);
+    if (err)
+    {
+        // TODO: need to bring _logger into this lib
+        // if (_logger)
+        //     _logger->warn("[ArduinoJsonWrapper] Failed to parse nested JSON: " + String(err.c_str()));
+        return;
+    }
+
+    (*docPtr)[key] = temp.as<JsonVariant>();
+
+    // TODO: when JsonArrayWrapper is built out, we should think about how to determine if it is array or object.
+    // // Determine if value is object or array
+    // JsonObject obj = value->asJsonObject();  // You would add this method to your base
+    // if (obj) {
+    //     (*docPtr)[key] = obj;
+    // } else {
+    //     JsonArray arr = value->asJsonArray();
+    //     if (arr) {
+    //         (*docPtr)[key] = arr;
+    //     }
+    // }
+}
+
+/**
+ * @brief Get (or create) a nested object for a given key.
+ *        If the key already exists, returns a wrapper for it.
  * @return Pointer to a new ArduinoJsonWrapper for the nested object.
  */
-RumpusJsonDocument *ArduinoJsonWrapper::createObject(const char *key)
+RumpusJsonDocument *ArduinoJsonWrapper::getObject(const char *key)
 {
-    JsonObject obj = (*docPtr).createNestedObject(key);
-    ArduinoJsonWrapper *wrapper = new ArduinoJsonWrapper();
+    JsonVariant var = (*docPtr)[key];
+    JsonObject obj;
+
+    if (var.isNull())
+    {
+        // Create if missing
+        obj = (*docPtr).createNestedObject(key);
+    }
+    else
+    {
+        // Reuse if it already exists
+        obj = var.as<JsonObject>();
+    }
+
+    auto *wrapper = new ArduinoJsonWrapper();
     wrapper->setInternalObject(obj);
     return wrapper;
 }
 
 /**
- * @brief Create a nested array for a given key.
+ * @brief Get (or create) a nested array for a given key.
+ *        If the key already exists, returns a wrapper for it.
  * @return Pointer to a new JsonArrayWrapper for the nested array.
  */
-RumpusJsonDocument *ArduinoJsonWrapper::createArray(const char *key)
+RumpusJsonDocument *ArduinoJsonWrapper::getArray(const char *key)
 {
-    JsonArray arr = (*docPtr).createNestedArray(key);
-    return new JsonArrayWrapper(arr); // ✅ Proper wrapper for arrays
+    JsonVariant var = (*docPtr)[key];
+    JsonArray arr;
+
+    if (var.isNull())
+    {
+        // Create if missing
+        arr = (*docPtr).createNestedArray(key);
+    }
+    else
+    {
+        // Reuse if it already exists
+        arr = var.as<JsonArray>();
+    }
+
+    return new JsonArrayWrapper(arr); // ✅ safe wrapper for arrays
 }
 
 /**

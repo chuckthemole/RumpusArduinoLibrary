@@ -22,42 +22,50 @@ public:
      * @param key The key to set.
      * @param value The string value to assign.
      */
-    virtual void set(const char* key, const char* value) = 0;
+    virtual void set(const char *key, const char *value) = 0;
 
     /**
      * @brief Set an integer value for a given key in the JSON document.
      * @param key The key to set.
      * @param value The integer value to assign.
      */
-    virtual void set(const char* key, int value) = 0;
+    virtual void set(const char *key, int value) = 0;
+
+    virtual void set(const char *key, RumpusJsonDocument *value) = 0;
 
     /**
-     * @brief Create a nested JSON object for a given key.
-     * @param key The key to assign the nested object to.
-     * @return Pointer to a new RumpusJsonDocument representing the nested object.
+     * @brief Get or create a nested JSON object for a given key.
+     * @param key The key to access or assign the nested object to.
+     * @return Pointer to a new RumpusJsonDocument wrapper for the nested object.
      *
-     * Allows chaining operations on nested objects:
+     * If the key already contains an object, it will be reused.
+     * If the key is missing or not an object, a new nested object will be created.
+     *
+     * Example usage:
      * @code
-     * RumpusJsonDocument* nested = doc->createObject("payload");
+     * RumpusJsonDocument* nested = doc->getObject("payload");
      * nested->set("user", "Chuck");
      * nested->set("duration", 120);
      * @endcode
      */
-    virtual RumpusJsonDocument* createObject(const char* key) = 0;
+    virtual RumpusJsonDocument *getObject(const char *key) = 0;
 
     /**
-     * @brief Create a nested JSON array for a given key.
-     * @param key The key to assign the array to.
-     * @return Pointer to a new RumpusJsonDocument representing the array.
+     * @brief Get or create a nested JSON array for a given key.
+     * @param key The key to access or assign the array to.
+     * @return Pointer to a new RumpusJsonDocument wrapper for the array.
      *
-     * Allows chaining operations on arrays:
+     * If the key already contains an array, it will be reused.
+     * If the key is missing or not an array, a new nested array will be created.
+     *
+     * Example usage:
      * @code
-     * RumpusJsonDocument* arr = doc->createArray("values");
+     * RumpusJsonDocument* arr = doc->getArray("values");
      * arr->set(0, "first");
      * arr->set(1, "second");
      * @endcode
      */
-    virtual RumpusJsonDocument* createArray(const char* key) = 0;
+    virtual RumpusJsonDocument *getArray(const char *key) = 0;
 
     /**
      * @brief Serialize the JSON document into a string for transmission or storage.

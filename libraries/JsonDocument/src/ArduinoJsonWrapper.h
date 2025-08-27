@@ -44,8 +44,9 @@ public:
     // Interface overrides
     void set(const char *key, const char *value) override;
     void set(const char *key, int value) override;
-    RumpusJsonDocument *createObject(const char *key) override;
-    RumpusJsonDocument *createArray(const char *key) override;
+    void set(const char *key, RumpusJsonDocument *value) override;
+    RumpusJsonDocument *getObject(const char *key) override;
+    RumpusJsonDocument *getArray(const char *key) override;
     String serialize() override;
     void clear() override;
 

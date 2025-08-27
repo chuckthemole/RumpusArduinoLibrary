@@ -1,6 +1,12 @@
 #pragma once
 #include <Arduino.h>
 
+#define COLOR_RED "\033[31m"
+#define COLOR_GREEN "\033[32m"
+#define COLOR_YELLOW "\033[33m"
+#define COLOR_BLUE "\033[34m"
+#define COLOR_RESET "\033[0m"
+
 /**
  * @file RumpshiftLogger.h
  * @brief A simple logging utility for Arduino projects with configurable log levels.
@@ -33,7 +39,7 @@ public:
      * @param baudRate Baud rate for Serial communication (default: 9600).
      * @param level Initial logging level (default: LOG_LEVEL_INFO).
      */
-    RumpshiftLogger(uint32_t baudRate = 9600, LogLevel level = LOG_LEVEL_INFO);
+    RumpshiftLogger(uint32_t baudRate = 9600, LogLevel level = LOG_LEVEL_INFO, bool color = false);
 
     /**
      * @brief Initialize Serial communication for logging.
@@ -86,6 +92,7 @@ public:
 private:
     uint32_t baudRate; ///< Serial baud rate.
     LogLevel logLevel; ///< Current logging level.
+    bool inColor;      ///< Logs in color.
 
     /**
      * @brief Internal log function to handle message printing.

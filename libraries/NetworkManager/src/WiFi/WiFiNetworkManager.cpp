@@ -1,28 +1,29 @@
 #include "WiFiNetworkManager.h"
 
+/**
+ * @brief Construct a WiFiNetworkManager with SSID, password, and optional logger.
+ * @param ssid WiFi network SSID.
+ * @param password WiFi network password.
+ * @param logger Optional logger instance.
+ *
+ * Note: TCP/UDP wrappers must be set externally using the setters from
+ * NetworkManager before calling begin().
+ */
 WiFiNetworkManager::WiFiNetworkManager(
     const char *ssid,
     const char *password,
-    RumpshiftLogger *logger,
-    unsigned int portTCP,
-    unsigned int portUDP)
+    RumpshiftLogger *logger)
     : _ssid(ssid),
       _password(password),
       _logger(logger),
-      _portTCP(portTCP),
-      _portUDP(portUDP),
-      _lastStatusCheck(0),
-      _remoteHost(nullptr),
-      _remotePort(0),
-      _remoteIP(IPAddress(0, 0, 0, 0))
+      _lastStatusCheck(0)
 {
-    _server = new WiFiServerWrapper(portTCP);
-    _udp = new WiFiUDPWrapper();
-    _client = nullptr; // will be assigned when a client connects
 }
 
 /**
- * @brief Initialize WiFi connection and start TCP/UDP servers.
+ * @brief Initialize WiFi connection and optionally start servers.
+ *
+ * Must be called after setting externally owned wrappers.
  */
 void WiFiNetworkManager::begin()
 {
@@ -34,26 +35,29 @@ void WiFiNetworkManager::begin()
 
     if (WiFi.status() == WL_CONNECTED)
     {
-        delay(3000); // DHCP delay
+        delay(3000); // Allow DHCP assignment
         printIPDetails();
-        _server->begin();
-        // For UDP, you’ll call beginPacket when you need to send
+
+        if (_server)
+            _server->begin();
+        // UDP wrapper is ready to send/receive packets
     }
-    else
+    else if (_logger)
     {
-        if (_logger)
-            _logger->info("[WiFiNetworkManager] ERROR: Failed to connect.");
+        _logger->info("[WiFiNetworkManager] ERROR: Failed to connect.");
     }
 }
 
 /**
- * @brief Maintain WiFi connection and handle client/UDP updates.
+ * @brief Maintain WiFi connection and handle client updates.
+ *
+ * Should be called periodically in loop() to maintain connectivity.
  */
 void WiFiNetworkManager::maintainConnection()
 {
     unsigned long now = millis();
 
-    // Reconnect if WiFi lost, check every 30s
+    // Check WiFi status every 30 seconds
     if (now - _lastStatusCheck > 30000)
     {
         if (WiFi.status() != WL_CONNECTED)
@@ -66,22 +70,35 @@ void WiFiNetworkManager::maintainConnection()
     }
 
     // Check for new TCP client
-    NetworkClient *newClient = _server->available();
-    if (!_client || !_client->connected())
+    if (_server)
     {
-        _client = newClient;
-        if (_client && _logger)
-            _logger->info("[WiFiNetworkManager] New client connected.");
+        NetworkClient *newClient = _server->available();
+        if (!_client || !_client->connected())
+        {
+            _client.reset(newClient);
+            if (_client && _logger)
+                _logger->info("[WiFiNetworkManager] New client connected.");
+        }
     }
 }
 
 /**
- * @brief Scan available WiFi networks.
+ * @brief Check if WiFi is currently connected.
+ * @return true if connected, false otherwise.
+ */
+bool WiFiNetworkManager::isConnected()
+{
+    return WiFi.status() == WL_CONNECTED;
+}
+
+/**
+ * @brief Scan available WiFi networks for debugging purposes.
  */
 void WiFiNetworkManager::scanNetworks()
 {
     if (_logger)
         _logger->info("[WiFiNetworkManager] Scanning for networks...");
+
     int n = WiFi.scanNetworks();
     for (int i = 0; i < n; i++)
     {
@@ -93,14 +110,36 @@ void WiFiNetworkManager::scanNetworks()
     }
 }
 
+void WiFiNetworkManager::setRemote(const char *host, uint16_t port)
+{
+    if (!_client)
+    {
+        _client = std::make_unique<WiFiClientWrapper>();
+    }
+    _client->setRemote(host, port);
+}
+
+void WiFiNetworkManager::setRemote(IPAddress ip, uint16_t port)
+{
+    if (!_client)
+    {
+        _client = std::make_unique<WiFiClientWrapper>();
+    }
+    _client->setRemote(ip, port);
+}
+
 /**
- * @brief Connect to configured WiFi.
+ * @brief Connect to configured WiFi network.
+ *
+ * Retries a limited number of times before returning.
  */
 void WiFiNetworkManager::connectWiFi()
 {
     if (_logger)
         _logger->info("[WiFiNetworkManager] Connecting to SSID: " + String(_ssid));
+
     WiFi.begin(_ssid, _password);
+
     int attempts = 0;
     while (WiFi.status() != WL_CONNECTED && attempts < 20)
     {
@@ -109,12 +148,13 @@ void WiFiNetworkManager::connectWiFi()
             _logger->info(".");
         attempts++;
     }
+
     if (_logger)
         _logger->info("[WiFiNetworkManager] Connected!");
 }
 
 /**
- * @brief Reconnect WiFi if lost.
+ * @brief Reconnect WiFi if the connection is lost.
  */
 void WiFiNetworkManager::reconnectWiFi()
 {
@@ -124,7 +164,7 @@ void WiFiNetworkManager::reconnectWiFi()
 }
 
 /**
- * @brief Print WiFi connection status.
+ * @brief Print detailed WiFi connection status.
  */
 void WiFiNetworkManager::printStatus()
 {
@@ -155,7 +195,7 @@ void WiFiNetworkManager::printStatus()
 }
 
 /**
- * @brief Print IP, RSSI, gateway, and subnet information.
+ * @brief Print IP address, RSSI, gateway, and subnet information.
  */
 void WiFiNetworkManager::printIPDetails()
 {

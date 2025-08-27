@@ -17,6 +17,7 @@ public:
 
     void set(const char *key, const char *value) override {} // not used in arrays
     void set(const char *key, int value) override {}         // not used in arrays
+    void set(const char *key, RumpusJsonDocument *value) override {}
 
     // Instead of keyed set, arrays use push/add
     void add(const char *value) { array.add(value); }
@@ -24,8 +25,8 @@ public:
     void add(float value) { array.add(value); }
     void add(bool value) { array.add(value); }
 
-    RumpusJsonDocument *createObject(const char *key) override { return nullptr; }
-    RumpusJsonDocument *createArray(const char *key) override { return nullptr; }
+    RumpusJsonDocument *getObject(const char *key) override { return nullptr; }
+    RumpusJsonDocument *getArray(const char *key) override { return nullptr; }
 
     String serialize() override
     {

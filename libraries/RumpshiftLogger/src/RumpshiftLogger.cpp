@@ -1,7 +1,7 @@
 #include "RumpshiftLogger.h"
 
-RumpshiftLogger::RumpshiftLogger(uint32_t baudRate, LogLevel level)
-    : baudRate(baudRate), logLevel(level) {}
+RumpshiftLogger::RumpshiftLogger(uint32_t baudRate, LogLevel level, bool color)
+    : baudRate(baudRate), logLevel(level), inColor(color) {}
 
 void RumpshiftLogger::begin()
 {
@@ -41,9 +41,35 @@ void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
 {
     if (level <= logLevel && logLevel != LOG_LEVEL_NONE)
     {
+        if (inColor)
+        {
+            const char *color = "";
+
+            switch (level)
+            {
+            case LOG_LEVEL_ERROR:
+                color = COLOR_RED;
+                break;
+            case LOG_LEVEL_WARN:
+                color = COLOR_YELLOW;
+                break;
+            case LOG_LEVEL_INFO:
+                color = COLOR_GREEN;
+                break;
+            case LOG_LEVEL_DEBUG:
+                color = COLOR_BLUE;
+                break;
+            default:
+                color = COLOR_RESET;
+                break;
+            }
+
+            Serial.print(color);
+        }
         Serial.print("[");
         Serial.print(prefix);
         Serial.print("] ");
         Serial.println(msg);
+        Serial.print(COLOR_RESET); // Reset after each message
     }
 }
