@@ -58,6 +58,23 @@ UIBase::Action SerialUI::getAction()
 }
 
 /**
+ * @brief A blocking return action mapped from user input.
+ *
+ * If no input is available, returns Action::NONE.
+ */
+UIBase::Action SerialUI::waitForAction(const String &msg)
+{
+    println(msg);
+    while (Serial.available() == 0)
+    {
+        // Do nothing, just wait for input
+    }
+    String input = Serial.readStringUntil('\n'); // read user input
+    input.trim();
+    return parseAction(input);
+}
+
+/**
  * @brief Prompt user for textual input.
  *
  * Displays a message, waits for user input, and returns the entered string.

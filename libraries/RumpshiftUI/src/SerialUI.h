@@ -33,6 +33,9 @@ public:
     /** Return the current action, or Action::NONE if no input. */
     Action getAction() override;
 
+    /** A blocking return action, or Action::NONE if no input. */
+    Action waitForAction(const String &msg) override;
+
     /** Prompt user for text input. */
     String prompt(const String& msg) override;
 

@@ -46,6 +46,13 @@ public:
     virtual Action getAction() { return Action::NONE; }
 
     /**
+     * @brief A blocking return action, or Action::NONE if no action.
+     *
+     * @return Action enum value
+     */
+    virtual Action waitForAction(const String &msg = "Waiting for input") { return Action::NONE; }
+
+    /**
      * @brief Optional text input prompt.
      *
      * Default implementation just prints the message and returns empty string.
