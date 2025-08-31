@@ -1,0 +1,15 @@
+{
+    "name": "TemperatureSensors",
+    "version": "1.0.0",
+    "author": "Charles Thomas",
+    "license": "MIT",
+    "description": "Abstract interface for temperature sensors with DallasTemperature implementation.",
+    "dependencies": [
+        "paulstoffregen/OneWire",
+        "milesburton/DallasTemperature"
+    ],
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": "*"
+}
