@@ -45,16 +45,11 @@ void SerialLCDInteractive::begin()
     setInputMapping(&_serialUI.select(), Action::SELECT);
 
     // Bind Actions to handlers
-    setActionHandler(Action::LEFT, ActionHandler([this]()
-                                                 { buttonLeft(); }));
-    setActionHandler(Action::RIGHT, ActionHandler([this]()
-                                                  { buttonRight(); }));
-    setActionHandler(Action::UP, ActionHandler([this]()
-                                               { buttonUp(); }));
-    setActionHandler(Action::DOWN, ActionHandler([this]()
-                                                 { buttonDown(); }));
-    setActionHandler(Action::SELECT, ActionHandler([this]()
-                                                   { buttonSelect(); }));
+    setActionHandler(Action::LEFT, ActionHandler::fromMember(this, &SerialLCDInteractive::buttonLeft));
+    setActionHandler(Action::RIGHT, ActionHandler::fromMember(this, &SerialLCDInteractive::buttonRight));
+    setActionHandler(Action::UP, ActionHandler::fromMember(this, &SerialLCDInteractive::buttonUp));
+    setActionHandler(Action::DOWN, ActionHandler::fromMember(this, &SerialLCDInteractive::buttonDown));
+    setActionHandler(Action::SELECT, ActionHandler::fromMember(this, &SerialLCDInteractive::buttonSelect));
 
     redrawLCD();
 }
