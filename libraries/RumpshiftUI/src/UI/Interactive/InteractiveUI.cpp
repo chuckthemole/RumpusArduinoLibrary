@@ -1,13 +1,13 @@
 #include "InteractiveUI.h"
 
-void InteractiveUI::setInputMapping(uint16_t rawInput, const Action &action)
+void InteractiveUI::setInputMapping(InputType *input, const Action &action)
 {
-    if (Action::isReserved(action))
+    if (!input || Action::isReserved(action))
     {
-        // Cannot assign handler to reserved NONE action
+        // Cannot assign handler to reserved NONE action or null input
         return;
     }
-    _actionMap[rawInput] = action;
+    _actionMap[input] = action;
 }
 
 void InteractiveUI::setActionHandler(const Action &action, const ActionHandler &handler)
@@ -34,9 +34,12 @@ bool InteractiveUI::validateConfiguration() const
     return true;
 }
 
-Action InteractiveUI::resolveAction(uint16_t rawInput) const
+Action InteractiveUI::resolveAction(InputType *input) const
 {
-    auto it = _actionMap.find(rawInput);
+    if (!input)
+        return Action::NONE;
+
+    auto it = _actionMap.find(input);
     if (it != _actionMap.end())
     {
         return it->second;
@@ -55,12 +58,12 @@ void InteractiveUI::executeHandler(const Action &action) const
 
 Action InteractiveUI::getAction()
 {
-    int raw = readRaw();
-    if (raw < 0)
+    InputType *input = readRaw();
+    if (!input)
         return Action::NONE;
 
-    Action action = resolveAction(static_cast<uint16_t>(raw));
-    if (action.getName() != Action::NONE.getName())
+    Action action = resolveAction(input);
+    if (!Action::isReserved(action))
     {
         executeHandler(action);
     }
@@ -73,10 +76,11 @@ Action InteractiveUI::waitForAction(const String &msg)
     {
         println(msg);
     }
+
     Action action = Action::NONE;
     while (action == Action::NONE)
     {
-        // TODO: add debug here
+        // Poll until a valid action is received
         action = getAction();
     }
     return action;

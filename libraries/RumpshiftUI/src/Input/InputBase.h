@@ -2,6 +2,7 @@
 #define INPUT_BASE_H
 
 #include <Arduino.h>
+#include "InputType.h"
 
 /**
  * @brief Abstract base class for all user input providers.
@@ -25,16 +26,11 @@ public:
     virtual void begin() = 0;
 
     /**
-     * @brief Poll the input source and return its raw value.
+     * @brief Subclasses must implement this to return the currently triggered InputType.
      *
-     * Each subclass decides what type of value makes sense:
-     *   - For buttons: could be an integer button ID
-     *   - For touchscreen: could be coordinates or region ID
-     *   - For sensors: could be an analog value
-     *
-     * @return int Raw input identifier/value
+     * @return Pointer to triggered InputType, or nullptr if none.
      */
-    virtual int readRaw() = 0;
+    virtual InputType *readRaw() = 0;
 
     /**
      * @brief Clear or reset the input state (optional).

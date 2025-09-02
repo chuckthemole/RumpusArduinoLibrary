@@ -10,7 +10,7 @@
  * to raw inputs and associated handlers.
  *
  * The special Action::NONE is reserved and represents "no action".
- * 
+ *
  */
 class Action
 {
@@ -68,6 +68,12 @@ public:
      */
     static const Action EMPTY;
 
+    static const Action UP;
+    static const Action DOWN;
+    static const Action LEFT;
+    static const Action RIGHT;
+    static const Action SELECT;
+
     /**
      * @brief Return true if the action is a reserved action.
      * TODO: let subclass define more reserved actions?
@@ -89,3 +95,10 @@ private:
 // Define the static NONE action
 inline const Action Action::NONE("NONE");
 inline const Action Action::EMPTY("");
+
+// Directional Actions, and select
+inline const Action Action::UP("UP");
+inline const Action Action::DOWN("DOWN");
+inline const Action Action::LEFT("LEFT");
+inline const Action Action::RIGHT("RIGHT");
+inline const Action Action::SELECT("SELECT");

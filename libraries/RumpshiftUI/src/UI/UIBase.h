@@ -27,19 +27,6 @@ public:
 
     /** @brief Print a message followed by a newline. */
     virtual void println(const String &msg) = 0;
-
-
-    /**
-     * @brief Optional text input prompt.
-     *
-     * Default implementation just prints the message and returns empty string.
-     * Override in implementations that support text input.
-     */
-    virtual String prompt(const String &msg)
-    {
-        println(msg);
-        return "";
-    }
 };
 
 #endif // UI_BASE_H
