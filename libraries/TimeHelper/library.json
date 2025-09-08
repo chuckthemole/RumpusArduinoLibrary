@@ -1,0 +1,10 @@
+{
+    "name": "TimeHelper",
+    "version": "1.0.0",
+    "author": "Chuck Thomas",
+    "maintainer": "Chuck Thomas <chuckthemole@gmail.com>",
+    "sentence": "Helper library for NTP time and ISO 8601 formatting",
+    "paragraph": "Provides a simple interface for NTP time sync and getting ISO timestamps.",
+    "category": "Timing",
+    "architectures": "*"
+}
