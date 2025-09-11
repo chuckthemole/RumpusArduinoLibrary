@@ -260,11 +260,40 @@ case $COMMAND in
         echo -e "${BLUE}Creating new PlatformIO project: ${GREEN}$PROJECT_NAME${NC}"
         echo -e "${BLUE}Board:${NC} $BOARD  ${BLUE}Platform:${NC} $PLATFORM  ${BLUE}Framework:${NC} $FRAMEWORK"
 
+        # Create project directory and initialize PlatformIO
         mkdir -p "$PROJECT_NAME"
         cd "$PROJECT_NAME" || exit 1
+        echo -e "${BLUE}Initializing PlatformIO project...${NC}"
         pio project init --board "$BOARD" --project-option="platform=$PLATFORM" --project-option="framework=$FRAMEWORK"
 
+        # Create src dir and write main.cpp directly
+        mkdir -p src
+cat << 'EOF' > src/main.cpp
+#include <Arduino.h>
+
+void setup() {
+    // Initialize serial communication at 9600 baud
+    Serial.begin(9600);
+    Serial.println("Hello, PlatformIO!");
+}
+
+void loop() {
+    // Your code here
+    delay(1000);
+    Serial.println("Looping...");
+}
+EOF
+
+        echo -e "${GREEN}Created src/main.cpp with skeleton Arduino code${NC}"
+
+        # Optional: show contents of src/
+        echo -e "${BLUE}Contents of src/:${NC}"
+        ls -l src
+
         echo -e "${GREEN}Project initialized in ./$PROJECT_NAME${NC}"
+        echo -e "${BLUE}Contents of src/:${NC}"
+        ls -l src
+
 
         # Ask about common.ini setup
         read -p "Would you like to create a common.ini for RumpusArduinoLibrary support? (y/n): " create_common
