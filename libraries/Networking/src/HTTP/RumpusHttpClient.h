@@ -114,27 +114,33 @@ public:
      * @brief Send an HTTP GET request.
      * @param path Request path.
      */
-    void get(const String &path)
+    String get(const String &path)
     {
         if (_logger)
-            _logger->debug("[RumpusHttpClient] get() called. Path: " + path);
+            _logger->debug("[RumpusHttpClient] GET: " + path);
 
         NetworkClient *client = _getValidClient("GET");
         if (!client)
         {
             if (_logger)
-                _logger->error("[RumpusHttpClient] get() aborted. No valid client.");
-            return;
+                _logger->error("[RumpusHttpClient] No valid client.");
+            return "";
         }
 
-        if (_logger)
-            _logger->debug("[RumpusHttpClient] get() got a valid client. Initializing...");
         _lazyInit(client);
-
         _sendRequest("GET", path);
 
         if (_logger)
-            _logger->debug("[RumpusHttpClient] get() finished sending request.");
+            _logger->debug("[RumpusHttpClient] Request sent.");
+
+        // Directly return response body
+        String body = _httpClient->responseBody();
+        body.trim();
+
+        if (_logger)
+            _logger->debug("[RumpusHttpClient::get()] Returning body: " + body);
+
+        return body;
     }
 
     /**
@@ -403,12 +409,10 @@ private:
 
     void _debugHttpClientStatusCode()
     {
-        if (_logger)
-            _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] debug client status code start.");
+        if (!_logger)
+            return;
 
-        String payload = _httpClient->readString();
-        if (_logger)
-            _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] Raw response: " + payload);
+        _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] Status code: " + String(_lastStatusCode));
 
         String reason;
         switch (_lastStatusCode)
@@ -438,8 +442,7 @@ private:
             break;
         }
 
-        if (_logger)
-            _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] Reason: " + reason);
+        _logger->debug("[RumpusHttpClient::debugHttpClientStatusCode] Reason: " + reason);
     }
 };
 
