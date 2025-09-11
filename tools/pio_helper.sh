@@ -286,6 +286,71 @@ EOF
 
         echo -e "${GREEN}Created src/main.cpp with skeleton Arduino code${NC}"
 
+        # Create include dir and write config.h template
+        mkdir -p include
+cat << 'EOF' > include/config.h
+// ============================================================================
+// config.h - Project Configuration Header
+// ============================================================================
+//
+// This file contains all environment-specific settings for your project.
+// Update these values before compiling. Keep secrets (like Wi-Fi passwords)
+// out of version control when possible (use environment variables or .gitignore).
+//
+// ============================================================================
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// -----------------------------------------------------------------------------
+// Wi-Fi Configuration
+// -----------------------------------------------------------------------------
+#define WIFI_SSID   "your_wifi_ssid"   // Replace with your Wi-Fi SSID
+#define WIFI_PASS   "your_wifi_pass"   // Replace with your Wi-Fi password
+
+// Alternative Wi-Fi networks (uncomment as fallback)
+// #define WIFI_SSID "BackupSSID"
+// #define WIFI_PASS "BackupPassword"
+
+// -----------------------------------------------------------------------------
+// Serial Configuration
+// -----------------------------------------------------------------------------
+#define BAUD_RATE   9600               // Baud rate for Serial communication
+
+// -----------------------------------------------------------------------------
+// Network Configuration
+// -----------------------------------------------------------------------------
+#define LAN_IP      "192.168.1.100"    // Static LAN IP of this device (optional)
+#define PORT        8000               // Port for server communication
+
+// -----------------------------------------------------------------------------
+// API Configuration
+// -----------------------------------------------------------------------------
+#define API_PATH    "/api/notion/log/" // API endpoint path
+#define TARGET_API  "notion"           // Target API (e.g., "notion", "influx", etc.)
+#define SOURCE      "device_name"      // Device identifier (e.g., "coffee_grinder")
+
+// Database IDs (useful for Notion or other APIs)
+#define DATABASE_ID "your_database_id_here"
+#define DB_ID       "your_secondary_db_id_here"
+
+// -----------------------------------------------------------------------------
+// Debugging Configuration
+// -----------------------------------------------------------------------------
+#define DEBUG_LEVEL LOG_LEVEL_DEBUG    // Options: LOG_LEVEL_ERROR, LOG_LEVEL_WARN,
+//                                      // LOG_LEVEL_INFO, LOG_LEVEL_DEBUG
+
+// -----------------------------------------------------------------------------
+// Notes:
+// - Consider using a secrets.h file (gitignored) for sensitive values like Wi-Fi.
+// - This template can be extended for different targets (MQTT, REST, etc.).
+// -----------------------------------------------------------------------------
+
+#endif // CONFIG_H
+EOF
+
+        echo -e "${GREEN}Created include/config.h with template settings${NC}"
+
         # Optional: show contents of src/
         echo -e "${BLUE}Contents of src/:${NC}"
         ls -l src
