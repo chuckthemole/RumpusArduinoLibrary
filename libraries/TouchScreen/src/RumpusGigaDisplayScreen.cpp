@@ -139,6 +139,27 @@ lv_obj_t *RumpusGigaDisplayScreen::createButton(const char *text,
     return btn;
 }
 
+lv_obj_t *RumpusGigaDisplayScreen::createGridContainer(lv_obj_t *parent,
+                                                       const lv_coord_t *row_sizes,
+                                                       const lv_coord_t *col_sizes,
+                                                       uint8_t row_cnt,
+                                                       uint8_t col_cnt,
+                                                       lv_align_t align)
+{
+    if (!parent)
+        parent = lv_scr_act();
+
+    lv_obj_t *grid = lv_obj_create(parent);
+    lv_obj_set_size(grid, lv_pct(100), lv_pct(100));
+    lv_obj_set_layout(grid, LV_LAYOUT_GRID);
+
+    lv_obj_set_grid_dsc_array(grid, col_sizes, row_sizes);
+
+    lv_obj_align(grid, align, 0, 0); // <-- fixed here
+
+    return grid;
+}
+
 lv_obj_t *RumpusGigaDisplayScreen::createFlexContainer(lv_obj_t *parent,
                                                        lv_flex_flow_t flow)
 {

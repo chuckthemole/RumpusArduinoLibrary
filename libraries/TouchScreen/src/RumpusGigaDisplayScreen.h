@@ -41,6 +41,13 @@ public:
                            lv_event_cb_t event_cb = nullptr,
                            const lv_font_t *font = DEFAULT_FONT_LARGE);
 
+    lv_obj_t *createGridContainer(lv_obj_t *parent = nullptr,
+                                  const lv_coord_t *row_dsc = nullptr,
+                                  const lv_coord_t *col_dsc = nullptr,
+                                  uint8_t row_count = 0,
+                                  uint8_t col_count = 0,
+                                  lv_align_t align = LV_ALIGN_CENTER);
+
     lv_obj_t *createFlexContainer(lv_obj_t *parent = nullptr,
                                   lv_flex_flow_t flow = LV_FLEX_FLOW_COLUMN);
 
