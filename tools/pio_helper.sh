@@ -351,6 +351,28 @@ EOF
 
         echo -e "${GREEN}Created include/config.h with template settings${NC}"
 
+        # Create or update .gitignore
+        echo -e "${BLUE}Updating .gitignore...${NC}"
+        cat << 'EOF' >> .gitignore
+##############################################
+#   ____  _        _   _ _   _ _             
+#  |  _ \(_) ___  | | | | |_(_) | ___  ___   
+#  | |_) | |/ __| | | | | __| | |/ _ \/ __|  
+#  |  __/| | (__  | |_| | |_| | |  __/\__ \  
+#  |_|   |_|\___|  \___/ \__|_|_|\___||___/  
+#                                            
+#    Added automatically by pio_helper.sh    
+##############################################
+
+**/config.h
+log.out
+logs/
+
+##############################################
+EOF
+        echo -e "${GREEN}.gitignore updated with PlatformIO and project-specific entries${NC}"
+
+
         # Optional: show contents of src/
         echo -e "${BLUE}Contents of src/:${NC}"
         ls -l src
