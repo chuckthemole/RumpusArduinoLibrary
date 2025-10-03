@@ -6,7 +6,11 @@
 #include <Arduino_GigaDisplay_GFX.h>
 #include <Arduino_GigaDisplayTouch.h>
 
-LV_FONT_DECLARE(lv_font_montserrat_40);
+#ifndef RUMPUS_GIGA_FONT
+#define RUMPUS_GIGA_FONT lv_font_montserrat_40
+#endif
+
+LV_FONT_DECLARE(RUMPUS_GIGA_FONT);
 
 class RumpusGigaDisplayScreen
 {
@@ -17,16 +21,56 @@ public:
     bool begin();
     void loop();
 
-    // Widgets (no styles applied now)
-    lv_obj_t *createLabel(const char *text, lv_obj_t *parent = nullptr);
-    lv_obj_t *createCenteredLabel(const char *text, lv_obj_t *parent = nullptr);
-    lv_obj_t *createButton(const char *text, lv_obj_t *parent = nullptr, lv_event_cb_t event_cb = nullptr);
-    lv_obj_t *createFlexContainer(lv_obj_t *parent = nullptr, lv_flex_flow_t flow = LV_FLEX_FLOW_COLUMN);
-    lv_obj_t *createCenterLayout(lv_obj_t *parent = nullptr, lv_flex_flow_t flow = LV_FLEX_FLOW_COLUMN);
-    lv_obj_t *createSlider(lv_obj_t *parent = nullptr, int16_t min = 0, int16_t max = 100, int16_t value = 0, lv_event_cb_t event_cb = nullptr);
-    lv_obj_t *createSwitch(lv_obj_t *parent = nullptr, bool on = false, lv_event_cb_t event_cb = nullptr);
-    lv_obj_t *createProgressBar(lv_obj_t *parent = nullptr, int16_t min = 0, int16_t max = 100, int16_t value = 0);
-    lv_obj_t *createTextArea(lv_obj_t *parent = nullptr, const char *text = "", lv_event_cb_t event_cb = nullptr);
+    // Screen helpers
+    void clear()
+    {
+        // remove all objects from the active screen
+        lv_obj_clean(lv_scr_act());
+    }
+    void loadNewScreen(lv_obj_t *new_screen)
+    {
+        lv_scr_load(new_screen);
+    }
+
+    // Widgets
+    lv_obj_t *createLabel(const char *text,
+                          lv_obj_t *parent = nullptr,
+                          const lv_font_t *font = &RUMPUS_GIGA_FONT);
+
+    lv_obj_t *createCenteredLabel(const char *text,
+                                  lv_obj_t *parent = nullptr,
+                                  const lv_font_t *font = &RUMPUS_GIGA_FONT);
+
+    lv_obj_t *createButton(const char *text,
+                           lv_obj_t *parent = nullptr,
+                           lv_event_cb_t event_cb = nullptr,
+                           const lv_font_t *font = &RUMPUS_GIGA_FONT);
+
+    lv_obj_t *createFlexContainer(lv_obj_t *parent = nullptr,
+                                  lv_flex_flow_t flow = LV_FLEX_FLOW_COLUMN);
+
+    lv_obj_t *createCenterLayout(lv_obj_t *parent = nullptr,
+                                 lv_flex_flow_t flow = LV_FLEX_FLOW_COLUMN);
+
+    lv_obj_t *createSlider(lv_obj_t *parent = nullptr,
+                           int16_t min = 0,
+                           int16_t max = 100,
+                           int16_t value = 0,
+                           lv_event_cb_t event_cb = nullptr);
+
+    lv_obj_t *createSwitch(lv_obj_t *parent = nullptr,
+                           bool on = false,
+                           lv_event_cb_t event_cb = nullptr);
+
+    lv_obj_t *createProgressBar(lv_obj_t *parent = nullptr,
+                                int16_t min = 0,
+                                int16_t max = 100,
+                                int16_t value = 0);
+
+    lv_obj_t *createTextArea(lv_obj_t *parent = nullptr,
+                             const char *text = "",
+                             lv_event_cb_t event_cb = nullptr,
+                             const lv_font_t *font = &RUMPUS_GIGA_FONT);
 
 private:
     uint16_t _horRes;

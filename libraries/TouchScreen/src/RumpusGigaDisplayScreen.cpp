@@ -88,103 +88,150 @@ void RumpusGigaDisplayScreen::touch_read_cb(lv_indev_drv_t *drv, lv_indev_data_t
     }
 }
 
-// ------------------ Widgets (no styles applied) ------------------
-lv_obj_t *RumpusGigaDisplayScreen::createLabel(const char *text, lv_obj_t *parent)
+// ------------------ Widgets (with optional font) ------------------
+
+lv_obj_t *RumpusGigaDisplayScreen::createLabel(const char *text,
+                                               lv_obj_t *parent,
+                                               const lv_font_t *font)
 {
     if (!parent)
         parent = lv_scr_act();
+
     lv_obj_t *label = lv_label_create(parent);
     lv_label_set_text(label, text);
+
+    if (font)
+    {
+        static lv_style_t style;
+        lv_style_init(&style);
+        lv_style_set_text_font(&style, font);
+        lv_obj_add_style(label, &style, 0);
+    }
+
     return label;
 }
 
-lv_obj_t *RumpusGigaDisplayScreen::createCenteredLabel(const char *text, lv_obj_t *parent)
+lv_obj_t *RumpusGigaDisplayScreen::createCenteredLabel(const char *text,
+                                                       lv_obj_t *parent,
+                                                       const lv_font_t *font)
 {
-    if (!parent)
-        parent = lv_scr_act();
-    lv_obj_t *label = lv_label_create(parent);
-    lv_label_set_text(label, text);
+    lv_obj_t *label = createLabel(text, parent, font);
     lv_obj_center(label);
     return label;
 }
 
-lv_obj_t *RumpusGigaDisplayScreen::createButton(const char *text, lv_obj_t *parent, lv_event_cb_t event_cb)
+lv_obj_t *RumpusGigaDisplayScreen::createButton(const char *text,
+                                                lv_obj_t *parent,
+                                                lv_event_cb_t event_cb,
+                                                const lv_font_t *font)
 {
     if (!parent)
         parent = lv_scr_act();
+
     lv_obj_t *btn = lv_btn_create(parent);
     if (event_cb)
         lv_obj_add_event_cb(btn, event_cb, LV_EVENT_CLICKED, nullptr);
 
-    lv_obj_t *label = lv_label_create(btn);
-    lv_label_set_text(label, text);
+    // Label inside button
+    lv_obj_t *label = createLabel(text, btn, font);
     lv_obj_center(label);
 
     return btn;
 }
 
-lv_obj_t *RumpusGigaDisplayScreen::createFlexContainer(lv_obj_t *parent, lv_flex_flow_t flow)
+lv_obj_t *RumpusGigaDisplayScreen::createFlexContainer(lv_obj_t *parent,
+                                                       lv_flex_flow_t flow)
 {
     if (!parent)
         parent = lv_scr_act();
+
     lv_obj_t *cont = lv_obj_create(parent);
     lv_obj_set_size(cont, lv_pct(100), lv_pct(100));
     lv_obj_set_flex_flow(cont, flow);
+
     return cont;
 }
 
-lv_obj_t *RumpusGigaDisplayScreen::createCenterLayout(lv_obj_t *parent, lv_flex_flow_t flow)
+lv_obj_t *RumpusGigaDisplayScreen::createCenterLayout(lv_obj_t *parent,
+                                                      lv_flex_flow_t flow)
 {
-    if (!parent)
-        parent = lv_scr_act();
-    lv_obj_t *cont = lv_obj_create(parent);
-    lv_obj_set_size(cont, lv_pct(100), lv_pct(100));
-    lv_obj_set_flex_flow(cont, flow);
+    lv_obj_t *cont = createFlexContainer(parent, flow);
     lv_obj_center(cont);
     return cont;
 }
 
-lv_obj_t *RumpusGigaDisplayScreen::createSlider(lv_obj_t *parent, int16_t min, int16_t max, int16_t value, lv_event_cb_t event_cb)
+lv_obj_t *RumpusGigaDisplayScreen::createSlider(lv_obj_t *parent,
+                                                int16_t min,
+                                                int16_t max,
+                                                int16_t value,
+                                                lv_event_cb_t event_cb)
 {
     if (!parent)
         parent = lv_scr_act();
+
     lv_obj_t *slider = lv_slider_create(parent);
     lv_slider_set_range(slider, min, max);
     lv_slider_set_value(slider, value, LV_ANIM_OFF);
+
     if (event_cb)
         lv_obj_add_event_cb(slider, event_cb, LV_EVENT_VALUE_CHANGED, nullptr);
+
     return slider;
 }
 
-lv_obj_t *RumpusGigaDisplayScreen::createSwitch(lv_obj_t *parent, bool on, lv_event_cb_t event_cb)
+lv_obj_t *RumpusGigaDisplayScreen::createSwitch(lv_obj_t *parent,
+                                                bool on,
+                                                lv_event_cb_t event_cb)
 {
     if (!parent)
         parent = lv_scr_act();
+
     lv_obj_t *sw = lv_switch_create(parent);
     if (on)
         lv_obj_add_state(sw, LV_STATE_CHECKED);
+
     if (event_cb)
         lv_obj_add_event_cb(sw, event_cb, LV_EVENT_VALUE_CHANGED, nullptr);
+
     return sw;
 }
 
-lv_obj_t *RumpusGigaDisplayScreen::createProgressBar(lv_obj_t *parent, int16_t min, int16_t max, int16_t value)
+lv_obj_t *RumpusGigaDisplayScreen::createProgressBar(lv_obj_t *parent,
+                                                     int16_t min,
+                                                     int16_t max,
+                                                     int16_t value)
 {
     if (!parent)
         parent = lv_scr_act();
+
     lv_obj_t *bar = lv_bar_create(parent);
     lv_bar_set_range(bar, min, max);
     lv_bar_set_value(bar, value, LV_ANIM_OFF);
+
     return bar;
 }
 
-lv_obj_t *RumpusGigaDisplayScreen::createTextArea(lv_obj_t *parent, const char *text, lv_event_cb_t event_cb)
+lv_obj_t *RumpusGigaDisplayScreen::createTextArea(lv_obj_t *parent,
+                                                  const char *text,
+                                                  lv_event_cb_t event_cb,
+                                                  const lv_font_t *font)
 {
     if (!parent)
         parent = lv_scr_act();
+
     lv_obj_t *ta = lv_textarea_create(parent);
     lv_textarea_set_text(ta, text);
+
+    if (font)
+    {
+        static lv_style_t style;
+        lv_style_init(&style);
+        lv_style_set_text_font(&style, font);
+        lv_obj_add_style(ta, &style, 0);
+    }
+
     if (event_cb)
         lv_obj_add_event_cb(ta, event_cb, LV_EVENT_VALUE_CHANGED, nullptr);
+
     return ta;
 }
