@@ -2,15 +2,10 @@
 #define RUMPUS_GIGA_DISPLAY_SCREEN_H
 
 #include <Arduino.h>
+#include "RumpusLvglFont.h"
 #include <lvgl.h>
 #include <Arduino_GigaDisplay_GFX.h>
 #include <Arduino_GigaDisplayTouch.h>
-
-#ifndef RUMPUS_GIGA_FONT
-#define RUMPUS_GIGA_FONT lv_font_montserrat_40
-#endif
-
-LV_FONT_DECLARE(RUMPUS_GIGA_FONT);
 
 class RumpusGigaDisplayScreen
 {
@@ -35,16 +30,16 @@ public:
     // Widgets
     lv_obj_t *createLabel(const char *text,
                           lv_obj_t *parent = nullptr,
-                          const lv_font_t *font = &RUMPUS_GIGA_FONT);
+                          const lv_font_t *font = DEFAULT_FONT_LARGE);
 
     lv_obj_t *createCenteredLabel(const char *text,
                                   lv_obj_t *parent = nullptr,
-                                  const lv_font_t *font = &RUMPUS_GIGA_FONT);
+                                  const lv_font_t *font = DEFAULT_FONT_LARGE);
 
     lv_obj_t *createButton(const char *text,
                            lv_obj_t *parent = nullptr,
                            lv_event_cb_t event_cb = nullptr,
-                           const lv_font_t *font = &RUMPUS_GIGA_FONT);
+                           const lv_font_t *font = DEFAULT_FONT_LARGE);
 
     lv_obj_t *createFlexContainer(lv_obj_t *parent = nullptr,
                                   lv_flex_flow_t flow = LV_FLEX_FLOW_COLUMN);
@@ -70,7 +65,7 @@ public:
     lv_obj_t *createTextArea(lv_obj_t *parent = nullptr,
                              const char *text = "",
                              lv_event_cb_t event_cb = nullptr,
-                             const lv_font_t *font = &RUMPUS_GIGA_FONT);
+                             const lv_font_t *font = DEFAULT_FONT_LARGE);
 
 private:
     uint16_t _horRes;

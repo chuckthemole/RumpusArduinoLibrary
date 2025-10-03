@@ -102,10 +102,10 @@ lv_obj_t *RumpusGigaDisplayScreen::createLabel(const char *text,
 
     if (font)
     {
-        static lv_style_t style;
-        lv_style_init(&style);
-        lv_style_set_text_font(&style, font);
-        lv_obj_add_style(label, &style, 0);
+        lv_style_t *style = new lv_style_t;
+        lv_style_init(style);
+        lv_style_set_text_font(style, font);
+        lv_obj_add_style(label, style, 0);
     }
 
     return label;
@@ -224,10 +224,10 @@ lv_obj_t *RumpusGigaDisplayScreen::createTextArea(lv_obj_t *parent,
 
     if (font)
     {
-        static lv_style_t style;
-        lv_style_init(&style);
-        lv_style_set_text_font(&style, font);
-        lv_obj_add_style(ta, &style, 0);
+        lv_style_t *style = new lv_style_t;
+        lv_style_init(style);
+        lv_style_set_text_font(style, font);
+        lv_obj_add_style(ta, style, 0);
     }
 
     if (event_cb)
