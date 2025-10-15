@@ -2,17 +2,33 @@
 #define WIFI_NETWORK_MANAGER_H
 
 #include "NetworkManager.h"
-#include <WiFiS3.h>
-#include <WiFiUdp.h>
 #include "RumpshiftLogger.h"
 #include "WiFiClientWrapper.h"
 #include "WiFiUDPWrapper.h"
 #include "WiFiServerWrapper.h"
 
+// Forward declarations for WiFi libraries (avoid include issues)
+#ifdef USE_WIFI_S3
+#include <WiFiS3.h>
+#else
+#include <WiFi.h>
+#endif
+#include <WiFiUdp.h>
+
+/**
+ * @enum WiFiImpl
+ * @brief Represents the WiFi implementation to use.
+ */
+enum class WiFiImpl
+{
+    ARDUINO_WIFI, ///< Use standard Arduino WiFi library
+    WIFI_S3       ///< Use WiFiS3 library (UNO R4 WiFi)
+};
+
 /**
  * @class WiFiNetworkManager
  * @brief Manages WiFi connections and provides access to TCP/UDP sockets
- *        for Arduino boards with WiFi support (e.g., UNO R4 WiFi).
+ *        for Arduino boards with WiFi support.
  *
  * Responsibilities:
  *  - Connect to a WiFi network using provided SSID/password.
@@ -39,9 +55,10 @@ public:
     WiFiNetworkManager() = default;
 
     /**
-     * @brief Construct a manager with SSID, password, and optional logger.
+     * @brief Construct a manager with SSID, password, WiFi implementation, and optional logger.
      * @param ssid WiFi network SSID.
      * @param password WiFi network password.
+     * @param impl Implementation type (Arduino WiFi or WiFiS3).
      * @param logger Optional logger for debug messages.
      *
      * Note: Wrappers must still be set externally before using network
@@ -50,6 +67,7 @@ public:
     WiFiNetworkManager(
         const char *ssid,
         const char *password,
+        WiFiImpl impl = WiFiImpl::ARDUINO_WIFI,
         RumpshiftLogger *logger = nullptr);
 
     /**
@@ -82,11 +100,11 @@ public:
     void setRemote(IPAddress ip, uint16_t port) override;
 
 private:
-    const char *_ssid = nullptr;     ///< WiFi SSID
-    const char *_password = nullptr; ///< WiFi password
-
-    unsigned long _lastStatusCheck = 0; ///< Timestamp of last status check
-    RumpshiftLogger *_logger = nullptr; ///< Optional logger
+    const char *_ssid = nullptr;             ///< WiFi SSID
+    const char *_password = nullptr;         ///< WiFi password
+    WiFiImpl _impl = WiFiImpl::ARDUINO_WIFI; ///< WiFi implementation
+    unsigned long _lastStatusCheck = 0;      ///< Timestamp of last status check
+    RumpshiftLogger *_logger = nullptr;      ///< Optional logger
 
     /**
      * @brief Scan and log available WiFi networks for debugging.

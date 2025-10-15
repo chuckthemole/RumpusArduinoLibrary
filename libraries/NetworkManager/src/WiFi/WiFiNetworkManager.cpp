@@ -12,9 +12,11 @@
 WiFiNetworkManager::WiFiNetworkManager(
     const char *ssid,
     const char *password,
+    WiFiImpl impl,
     RumpshiftLogger *logger)
     : _ssid(ssid),
       _password(password),
+      _impl(impl),
       _logger(logger),
       _lastStatusCheck(0)
 {
@@ -216,5 +218,7 @@ void WiFiNetworkManager::printIPDetails()
         Serial.println(WiFi.gatewayIP());
         Serial.print("Subnet: ");
         Serial.println(WiFi.subnetMask());
+        Serial.print("MAC: TODO: NEED TO TEST");
+        // Serial.println(WiFi.macAddress());
     }
 }
