@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <map>
 #include "InteractiveUI.h"
+#include "Menu/MenuTemplate.h"
 
 /**
  * @brief Abstract base class for interactive UIs that use Serial input.
@@ -46,6 +47,33 @@ public:
     virtual void println(const String &msg) override
     {
         Serial.println(msg);
+    }
+
+    /** Print newline. */
+    virtual void println()
+    {
+        Serial.println();
+    }
+
+    /**
+     * @brief Display a menu in Serial with the selected item highlighted.
+     * @param menu The menu to display
+     * @param selectedIndex Index of the currently selected item
+     */
+    void showMenu(const MenuTemplate &menu, size_t selectedIndex)
+    {
+        Serial.println();
+        Serial.println(F("=== Menu ==="));
+
+        for (size_t i = 0; i < menu.numItems; ++i)
+        {
+            String line = (i == selectedIndex ? ">" : " ");
+            line += menu.items[i];
+
+            Serial.println(line);
+        }
+
+        Serial.println(F("================"));
     }
 
 protected:

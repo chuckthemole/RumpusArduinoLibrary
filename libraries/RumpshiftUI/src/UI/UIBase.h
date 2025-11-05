@@ -21,12 +21,6 @@ public:
 
     /** @brief Clear the display or console output. */
     virtual void clear() = 0;
-
-    /** @brief Print a message without a newline. */
-    virtual void print(const String &msg) = 0;
-
-    /** @brief Print a message followed by a newline. */
-    virtual void println(const String &msg) = 0;
 };
 
 #endif // UI_BASE_H

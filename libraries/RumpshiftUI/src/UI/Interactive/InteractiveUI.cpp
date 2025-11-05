@@ -85,3 +85,9 @@ Action InteractiveUI::waitForAction(const String &msg)
     }
     return action;
 }
+
+void InteractiveUI::showMenu(const MenuTemplate &menu, size_t selectedIndex)
+{
+    // TODO: introduce RumpshiftLogger instead of Serial
+    Serial.println("showMenu() must be implemented in derived class");
+}

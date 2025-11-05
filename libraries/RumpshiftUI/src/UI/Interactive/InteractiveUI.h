@@ -4,6 +4,7 @@
 #include "../Action.h"
 #include "../ActionHandler.h"
 #include "../../Input/InputType.h"
+#include "Menu/MenuTemplate.h"
 #include <map>
 
 /**
@@ -73,4 +74,22 @@ public:
      * @brief Block until a valid Action is received.
      */
     virtual Action waitForAction(const String &msg = "Waiting for input") final;
+
+    /**
+     * @brief Display a menu to the user.
+     *
+     * Derived classes should override this method to render the menu
+     * according to the specific UI type (LCD, touchscreen, voice, etc.).
+     *
+     * The provided MenuTemplate contains the menu title, items, and the
+     * currently selected index. Rendering may involve highlighting the
+     * selected item, scrolling long lists, or other UI-specific behaviors.
+     *
+     * @param menu The MenuTemplate representing the menu to display.
+     *
+     * @note This function is intended to be overridden in subclasses.
+     *       Calling the base implementation (if any) may not produce
+     *       meaningful output.
+     */
+    virtual void showMenu(const MenuTemplate &menu, size_t selectedIndex = 0) = 0;
 };

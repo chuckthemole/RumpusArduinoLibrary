@@ -4,6 +4,7 @@
 #include "../../LCDInteractive.h"
 #include "../../SerialWASDInteractive.h"
 #include "../../../../Input/DirectionalButtonInput.h"
+#include "../../Menu/MenuTemplate.h"
 
 /**
  * @brief Hybrid UI: behaves like LCDInteractive but echoes to Serial as a mock LCD.
@@ -24,7 +25,10 @@ public:
      * @param rows Number of rows in mock LCD
      * @param baud Serial baud rate
      */
-    SerialLCDInteractive(uint8_t cols = 16, uint8_t rows = 2, unsigned long baud = 9600);
+    SerialLCDInteractive(
+        uint8_t cols = 16,
+        uint8_t rows = 2,
+        unsigned long baud = 9600);
 
     /**
      * @brief Construct using an external LCD wrapper (display still goes to Serial)
@@ -35,8 +39,12 @@ public:
      * @param rows Number of rows in mock LCD
      * @param baud Serial baud rate
      */
-    SerialLCDInteractive(LiquidCrystalWrapper &lcdRef, uint8_t buttonsPin,
-                         uint8_t cols, uint8_t rows, unsigned long baud = 9600);
+    SerialLCDInteractive(
+        LiquidCrystalWrapper &lcdRef,
+        uint8_t buttonsPin,
+        uint8_t cols,
+        uint8_t rows,
+        unsigned long baud = 9600);
 
     ~SerialLCDInteractive() override;
 
@@ -55,14 +63,22 @@ public:
     /** Read input from Serial through SerialWASDInteractive. */
     InputType *readRaw() override;
 
+    /**
+     * @brief Display a menu in the Serial LCD mock with the selected item highlighted.
+     * @param menu The menu to display
+     * @param selectedIndex Index of the currently selected item
+     */
+    void showMenu(const MenuTemplate &menu, size_t selectedIndex = 0) override;
+
 protected:
     SerialWASDInteractive _serialUI; ///< Serial I/O handler
 
-    const int COLS;
+    int COLS;
     const int ROWS;
     char **_buffer = nullptr; ///< 2D character buffer representing the LCD
     int _cursorRow = 0;
     int _cursorCol = 0;
+    int *_scrollOffset; // array, length = ROWS
 
     /** Virtual handlers for directional and select buttons */
     virtual void buttonLeft();
@@ -86,4 +102,6 @@ private:
 
     /** Redraw the buffer to Serial with borders */
     void redrawLCD();
+
+    void scrollRow(int row);
 };

@@ -95,7 +95,7 @@ void SerialLCDInteractive::_initBuffer()
 {
     _buffer = new char *[ROWS];
     for (int r = 0; r < ROWS; ++r)
-        _buffer[r] = new char[COLS];
+        _buffer[r] = new char[COLS]; // only allocate COLS, but we’ll allow printing past it
     initBuffer();
 }
 
@@ -112,41 +112,109 @@ void SerialLCDInteractive::clearRow(int row)
         _buffer[row][c] = ' ';
 }
 
+//-------------------------------------------------------------------
+// Append text to buffer
+//-------------------------------------------------------------------
 void SerialLCDInteractive::appendToBuffer(const String &msg, bool newLine)
 {
     for (size_t i = 0; i < msg.length(); ++i)
     {
-        _buffer[_cursorRow][_cursorCol] = msg[i];
-        _cursorCol++;
-        if (_cursorCol >= COLS)
+        // spill past COLS if needed
+        int colIndex = _cursorCol;
+
+        // expand row if printing beyond current COLS
+        if (colIndex >= COLS)
         {
-            _cursorCol = 0;
-            _cursorRow = (_cursorRow + 1) % ROWS;
-            clearRow(_cursorRow);
+            // resize row buffer to fit new colIndex+1
+            char *newRow = new char[colIndex + 1];
+            memcpy(newRow, _buffer[_cursorRow], COLS);
+            for (int j = COLS; j <= colIndex; ++j)
+                newRow[j] = ' ';
+            delete[] _buffer[_cursorRow];
+            _buffer[_cursorRow] = newRow;
+            COLS = colIndex + 1; // expand "virtual" width
         }
+
+        _buffer[_cursorRow][colIndex] = msg[i];
+        _cursorCol++;
     }
+
     if (newLine)
     {
         _cursorCol = 0;
         _cursorRow = (_cursorRow + 1) % ROWS;
-        clearRow(_cursorRow);
     }
 }
 
+//-------------------------------------------------------------------
+// Redraw LCD to Serial (borders + full row contents, spill past COLS)
+//-------------------------------------------------------------------
 void SerialLCDInteractive::redrawLCD()
 {
-    String border;
-    border.reserve(COLS + 2);
-    for (int i = 0; i < COLS + 2; ++i)
-        border += '*';
+    _serialUI.println();
 
-    _serialUI.println(border);
+    const String title = "LCD*SHIELD";
+    int totalWidth = COLS + 6; // 3 '*' per side
+    int titleStart = (totalWidth - title.length()) / 2;
+
+    // Top 3 rows border with title in the middle row
+    for (int row = 0; row < 3; ++row)
+    {
+        for (int i = 0; i < totalWidth; ++i)
+        {
+            if (row == 1 && i >= titleStart && i < titleStart + title.length())
+                _serialUI.print(String(title[i - titleStart]));
+            else
+                _serialUI.print("*");
+        }
+        _serialUI.println();
+    }
+
+    // LCD content rows
     for (int r = 0; r < ROWS; ++r)
     {
-        _serialUI.print("*");
-        for (int c = 0; c < COLS; ++c)
-            _serialUI.print(String(_buffer[r][c]));
-        _serialUI.println("*");
+        // Left border
+        _serialUI.print("***");
+
+        // Row contents
+        int rowLength = _cursorCol;
+        if (rowLength < COLS)
+            rowLength = COLS; // ensure at least full width
+
+        for (int c = 0; c < rowLength; ++c)
+        {
+            char ch = (c < COLS) ? _buffer[r][c] : ' ';
+            _serialUI.print(String(ch));
+        }
+
+        // Right border
+        _serialUI.println("***");
     }
-    _serialUI.println(border);
+
+    // Bottom 3 rows border
+    for (int row = 0; row < 3; ++row)
+    {
+        for (int i = 0; i < totalWidth; ++i)
+            _serialUI.print("*");
+        _serialUI.println();
+    }
+}
+
+void SerialLCDInteractive::showMenu(const MenuTemplate &menu, size_t selectedIndex)
+{
+    _serialUI.println();
+    _serialUI.println(F("=== Menu ==="));
+
+    for (size_t i = 0; i < menu.numItems && i < ROWS - 1; ++i)
+    {
+        String line = (i == selectedIndex ? ">" : " ");
+        line += menu.items[i];
+
+        if (line.length() > COLS)
+            line = line.substring(0, COLS - 3) + "...";
+
+        _serialUI.println(line);
+    }
+
+    _serialUI.println(F("================"));
 }
