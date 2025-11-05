@@ -1,26 +1,28 @@
 #include "PostLogHttp.h"
-#include <EEPROM.h>
-
-#define EEPROM_SIZE 512
 
 PostLogHttp::PostLogHttp(
     NetworkManager &network,
     RumpshiftLogger *logger,
     const String &path,
-    bool queueFailedRequests)
+    bool queueFailedRequests,
+    Storage *storage)
     : _httpClient(network, logger),
       _logger(logger),
       _path(path),
       _queue(QUEUE_INITIAL_CAPACITY),
-      _queueFailedRequests(queueFailedRequests)
+      _queueFailedRequests(queueFailedRequests),
+      _storage(storage)
 {
 }
 
 void PostLogHttp::begin()
 {
     _httpClient.begin();
-    if (_queueFailedRequests)
+    if (_queueFailedRequests && _storage)
+    {
+        _storage->begin();
         loadFromStorage();
+    }
 }
 
 void PostLogHttp::log(const String &message)
@@ -35,13 +37,12 @@ void PostLogHttp::log(const String &message)
         if (_logger)
             _logger->warn("[PostLogHttp::log] network unavailable, queuing message");
 
-        String copy = message;
-        _queue.push(copy);
+        _queue.push(message);
 
         if (_logger)
-            _logger->info("[PostLogHttp::log] saving message to EEPROM");
+            _logger->info("[PostLogHttp::log] saving message to storage");
 
-        saveToStorage(copy);
+        saveToStorage(message);
     }
     else if (sent && _logger)
     {
@@ -100,51 +101,40 @@ void PostLogHttp::clearQueue()
 {
     while (!_queue.isEmpty())
         _queue.pop();
+
+    if (_storage)
+        _storage->clear();
 }
 
 void PostLogHttp::saveToStorage(const String &message)
 {
-    if (!_queueFailedRequests)
+    if (!_queueFailedRequests || !_storage)
         return;
 
-    String stored;
-    for (int i = 0; i < EEPROM_SIZE; i++)
-    {
-        char c = EEPROM.read(i);
-        if (c == 0xFF || c == '\0')
-            break;
-        stored += c;
-    }
+    // Load current stored messages
+    String stored = _storage->load();
 
     if (stored.length() > 0)
         stored += '\n';
     stored += message;
 
-    if (stored.length() > EEPROM_SIZE - 1)
-        stored = stored.substring(stored.length() - (EEPROM_SIZE - 1));
+    // Trim if storage has a limit
+    constexpr int STORAGE_LIMIT = 512;
+    if (stored.length() > STORAGE_LIMIT - 1)
+        stored = stored.substring(stored.length() - (STORAGE_LIMIT - 1));
 
-    for (int i = 0; i < stored.length(); i++)
-        EEPROM.update(i, stored[i]);
-    EEPROM.update(stored.length(), '\0');
+    _storage->save(stored);
 
     if (_logger)
-        _logger->debug("[PostLogHttp] saved message to EEPROM");
+        _logger->debug("[PostLogHttp] saved message to storage");
 }
 
 void PostLogHttp::loadFromStorage()
 {
-    if (!_queueFailedRequests)
+    if (!_queueFailedRequests || !_storage)
         return;
 
-    String stored;
-    for (int i = 0; i < EEPROM_SIZE; i++)
-    {
-        char c = EEPROM.read(i);
-        if (c == 0xFF || c == '\0')
-            break;
-        stored += c;
-    }
-
+    String stored = _storage->load();
     if (stored.length() == 0)
         return;
 
@@ -163,11 +153,10 @@ void PostLogHttp::loadFromStorage()
     if (lastLine.length() > 0)
         _queue.push(lastLine);
 
-    for (int i = 0; i < EEPROM_SIZE; i++)
-        EEPROM.update(i, '\0');
+    _storage->clear();
 
     if (_logger)
-        _logger->debug("[PostLogHttp] loaded queued messages from EEPROM");
+        _logger->debug("[PostLogHttp] loaded queued messages from storage");
 }
 
 void PostLogHttp::setPath(const String &path)

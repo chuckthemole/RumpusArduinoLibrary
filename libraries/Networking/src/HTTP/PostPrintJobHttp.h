@@ -6,6 +6,7 @@
 #include "NetworkProtocol.h"  // Base interface for protocols
 #include "RumpusHttpClient.h" // Base HTTP client
 #include "RumpshiftLogger.h"
+#include "Storage.h"
 
 constexpr size_t PRINT_QUEUE_INITIAL_CAPACITY = 128;
 
@@ -36,7 +37,8 @@ public:
         NetworkManager &network,
         RumpshiftLogger *logger = nullptr,
         const String &path = "/print",
-        bool queueFailedRequests = true);
+        bool queueFailedRequests = true,
+        Storage *storage = nullptr);
 
     ~PostPrintJobHttp() = default;
 
@@ -80,6 +82,7 @@ private:
     RumpshiftLogger *_logger;     ///< Optional logger
     RumpusHttpClient _httpClient; ///< Internal HTTP client for sending jobs
     bool _queueFailedRequests;    ///< Whether failed jobs are queued
+    Storage *_storage;
 
     /**
      * @brief Attempt to send a single print job via HTTP.

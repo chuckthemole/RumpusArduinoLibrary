@@ -142,6 +142,15 @@ void WiFiNetworkManager::connectWiFi()
 
     WiFi.begin(_ssid, _password);
 
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        if (_logger)
+            _logger->info("First attempt failed, retrying once...");
+        WiFi.disconnect();
+        delay(2000);
+        WiFi.begin(_ssid, _password);
+    }
+
     int attempts = 0;
     while (WiFi.status() != WL_CONNECTED && attempts < 20)
     {

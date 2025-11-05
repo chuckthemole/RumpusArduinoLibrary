@@ -1,26 +1,28 @@
 #include "PostPrintJobHttp.h"
-#include <EEPROM.h>
-
-#define EEPROM_SIZE 512
 
 PostPrintJobHttp::PostPrintJobHttp(
     NetworkManager &network,
     RumpshiftLogger *logger,
     const String &path,
-    bool queueFailedRequests)
+    bool queueFailedRequests,
+    Storage *storage)
     : _httpClient(network, logger),
       _logger(logger),
       _path(path),
       _queue(PRINT_QUEUE_INITIAL_CAPACITY),
-      _queueFailedRequests(queueFailedRequests)
+      _queueFailedRequests(queueFailedRequests),
+      _storage(storage)
 {
 }
 
 void PostPrintJobHttp::begin()
 {
     _httpClient.begin();
-    if (_queueFailedRequests)
+    if (_queueFailedRequests && _storage)
+    {
+        _storage->begin();
         loadFromStorage();
+    }
 }
 
 void PostPrintJobHttp::enqueueJob(const String &job)
@@ -39,7 +41,7 @@ void PostPrintJobHttp::enqueueJob(const String &job)
         _queue.push(copy);
 
         if (_logger)
-            _logger->info("[PostPrintJobHttp::enqueueJob] saving job to EEPROM");
+            _logger->info("[PostPrintJobHttp::enqueueJob] saving job to storage");
 
         saveToStorage(copy);
     }
@@ -100,51 +102,39 @@ void PostPrintJobHttp::clearQueue()
 {
     while (!_queue.isEmpty())
         _queue.pop();
+
+    if (_storage)
+        _storage->clear();
 }
 
 void PostPrintJobHttp::saveToStorage(const String &job)
 {
-    if (!_queueFailedRequests)
+    if (!_queueFailedRequests || !_storage)
         return;
 
-    String stored;
-    for (int i = 0; i < EEPROM_SIZE; i++)
-    {
-        char c = EEPROM.read(i);
-        if (c == 0xFF || c == '\0')
-            break;
-        stored += c;
-    }
+    // Load current data
+    String stored = _storage->load();
 
     if (stored.length() > 0)
         stored += '\n';
     stored += job;
 
-    if (stored.length() > EEPROM_SIZE - 1)
-        stored = stored.substring(stored.length() - (EEPROM_SIZE - 1));
+    // Optional trimming if your backend storage has limits
+    if (stored.length() > Storage::MAX_SIZE - 1)
+        stored = stored.substring(stored.length() - (Storage::MAX_SIZE - 1));
 
-    for (int i = 0; i < stored.length(); i++)
-        EEPROM.update(i, stored[i]);
-    EEPROM.update(stored.length(), '\0');
+    _storage->save(stored);
 
     if (_logger)
-        _logger->debug("[PostPrintJobHttp] saved job to EEPROM");
+        _logger->debug("[PostPrintJobHttp] saved job to storage");
 }
 
 void PostPrintJobHttp::loadFromStorage()
 {
-    if (!_queueFailedRequests)
+    if (!_queueFailedRequests || !_storage)
         return;
 
-    String stored;
-    for (int i = 0; i < EEPROM_SIZE; i++)
-    {
-        char c = EEPROM.read(i);
-        if (c == 0xFF || c == '\0')
-            break;
-        stored += c;
-    }
-
+    String stored = _storage->load();
     if (stored.length() == 0)
         return;
 
@@ -163,11 +153,10 @@ void PostPrintJobHttp::loadFromStorage()
     if (lastLine.length() > 0)
         _queue.push(lastLine);
 
-    for (int i = 0; i < EEPROM_SIZE; i++)
-        EEPROM.update(i, '\0');
+    _storage->clear();
 
     if (_logger)
-        _logger->debug("[PostPrintJobHttp] loaded queued jobs from EEPROM");
+        _logger->debug("[PostPrintJobHttp] loaded queued jobs from storage");
 }
 
 void PostPrintJobHttp::setPath(const String &path)

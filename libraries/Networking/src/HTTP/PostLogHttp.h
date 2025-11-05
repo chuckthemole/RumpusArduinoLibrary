@@ -6,6 +6,7 @@
 #include "NetworkProtocol.h"  // Base interface for protocols
 #include "RumpusHttpClient.h" // Base HTTP client
 #include "RumpshiftLogger.h"
+#include "Storage.h"
 
 constexpr size_t QUEUE_INITIAL_CAPACITY = 128;
 
@@ -36,7 +37,8 @@ public:
         NetworkManager &network,
         RumpshiftLogger *logger = nullptr,
         const String &path = "/",
-        bool queueFailedRequests = true);
+        bool queueFailedRequests = true,
+        Storage *storage = nullptr);
 
     ~PostLogHttp() = default;
 
@@ -80,6 +82,7 @@ private:
     RumpshiftLogger *_logger;     ///< Optional logger
     RumpusHttpClient _httpClient; ///< Internal HTTP client for sending messages
     bool _queueFailedRequests;    ///< Whether failed messages are queued
+    Storage *_storage;
 
     /**
      * @brief Attempt to send a single message via HTTP.
