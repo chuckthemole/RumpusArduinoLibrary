@@ -1,0 +1,38 @@
+{
+    "name": "RumpusArduinoLibrary",
+    "version": "1.0.0",
+    "description": "Core library for Rumpus Arduino projects. Provides configurable modules for logging, WiFi, HTTP client, HTTP logger, time synchronization, and pin management.",
+    "keywords": [
+        "arduino",
+        "rumpus",
+        "logger",
+        "wifi",
+        "http",
+        "ntp",
+        "pins",
+        "core"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chuckthemole/RumpusArduinoLibrary.git"
+    },
+    "authors": [
+        {
+            "name": "Chuck Thomas",
+            "email": "chuckthemole@gmail.com",
+            "maintainer": true
+        }
+    ],
+    "license": "MIT",
+    "frameworks": "arduino",
+    "platforms": "*",
+    "dependencies": [
+        {
+            "name": "ArduinoJson",
+            "version": "^6.21.0"
+        }
+    ],
+    "headers": [
+        "RumpusArduinoCore.h"
+    ]
+}
