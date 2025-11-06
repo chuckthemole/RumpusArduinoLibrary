@@ -31,6 +31,17 @@ public:
         return *this;
     }
 
+    void begin(RumpshiftLogger *logger = nullptr)
+    {
+        _client = WiFiClient(); // explicitly construct internal client
+        _logger = logger;
+        if (_logger)
+        {
+            _logger->info("[WiFiClientWrapper] Initialized internal WiFiClient.");
+            _logger->info("[WiFiClientWrapper] Initialized internal WiFiClient. address=" + String((uintptr_t)this, HEX));
+        }
+    }
+
     void setClient(WiFiClient client) { _client = client; }
 
     /**

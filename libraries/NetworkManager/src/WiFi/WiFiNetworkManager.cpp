@@ -162,6 +162,7 @@ void WiFiNetworkManager::connectWiFi()
 
     if (_logger)
         _logger->info("[WiFiNetworkManager] Connected!");
+    delay(500);
 }
 
 /**
