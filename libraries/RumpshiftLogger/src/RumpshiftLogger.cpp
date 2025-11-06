@@ -6,10 +6,16 @@ RumpshiftLogger::RumpshiftLogger(uint32_t baudRate, LogLevel level, bool inColor
 void RumpshiftLogger::begin()
 {
     Serial.begin(_baudRate);
-    while (!Serial)
+
+#if defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_MBED)
+    // Only wait on boards with native USB Serial
+    uint32_t timeout = millis() + 5000; // max wait 5 seconds
+    while (!Serial && millis() < timeout)
     {
-        ; // Wait for Serial connection (optional, useful for boards with native USB)
+        Serial.println("Waiting for Serial connection...");
+        delay(250); // prevent tight loop
     }
+#endif
 }
 
 void RumpshiftLogger::setLevel(LogLevel level)
@@ -39,38 +45,40 @@ void RumpshiftLogger::debug(const String &msg)
 
 void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
 {
-    if (level <= _logLevel && _logLevel != LOG_LEVEL_NONE)
+    // Only log if this level is enabled
+    if (_logLevel == LOG_LEVEL_NONE || level > _logLevel)
+        return;
+
+    // Compose full message
+    String fullMsg = "[" + String(prefix) + "] " + msg;
+
+    // Serial output with optional color
+    if (_inColor)
     {
-        if (_inColor)
+        const char *color = COLOR_RESET;
+        switch (level)
         {
-            const char *color = "";
-            switch (level)
-            {
-            case LOG_LEVEL_ERROR:
-                color = COLOR_RED;
-                break;
-            case LOG_LEVEL_WARN:
-                color = COLOR_YELLOW;
-                break;
-            case LOG_LEVEL_INFO:
-                color = COLOR_GREEN;
-                break;
-            case LOG_LEVEL_DEBUG:
-                color = COLOR_BLUE;
-                break;
-            default:
-                color = COLOR_RESET;
-                break;
-            }
-            Serial.print(color);
+        case LOG_LEVEL_ERROR:
+            color = COLOR_RED;
+            break;
+        case LOG_LEVEL_WARN:
+            color = COLOR_YELLOW;
+            break;
+        case LOG_LEVEL_INFO:
+            color = COLOR_GREEN;
+            break;
+        case LOG_LEVEL_DEBUG:
+            color = COLOR_BLUE;
+            break;
         }
-
-        Serial.print("[");
-        Serial.print(prefix);
-        Serial.print("] ");
-        Serial.println(msg);
-
-        if (_inColor)
-            Serial.print(COLOR_RESET); // Only reset if we used a color
+        Serial.print(color);
     }
+
+    Serial.println(fullMsg);
+
+    if (_inColor)
+        Serial.print(COLOR_RESET);
+
+    // Store in log lines buffer
+    logLine(fullMsg);
 }
