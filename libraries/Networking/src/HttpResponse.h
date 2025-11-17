@@ -6,9 +6,7 @@
 
 /**
  * @class HttpResponse
- * @brief Represents a parsed HTTP response.
- *
- * Encapsulates status code, headers, and body.
+ * @brief Represents a parsed HTTP response, encapsulating status code, headers, and body.
  */
 class HttpResponse
 {
@@ -26,28 +24,80 @@ public:
     // Getters
     // ---------------------
     int status() const { return _statusCode; }
-    String body() const { return _body; }
-    String headers() const
+    const String &body() const { return _body; }
+
+    /**
+     * @brief Returns all headers as a single formatted string.
+     */
+    String headersAsString() const
     {
         String result;
-        for (auto const &kv : _headers)
+        for (const auto &kv : _headers)
         {
             result += kv.first + ": " + kv.second + "\n";
         }
         return result;
     }
-    String full() const
-    {
-        return "HTTP Status: " + String(_statusCode) + "\n" + headers() + "\n" + _body;
-    }
 
-    // Optional: fetch specific header
+    /**
+     * @brief Returns a specific header value by key (case-sensitive).
+     */
     String header(const String &key) const
     {
         auto it = _headers.find(key);
         if (it != _headers.end())
+        {
             return it->second;
+        }
         return "";
+    }
+
+    /**
+     * @brief Returns a formatted representation of the full HTTP response.
+     */
+    String full() const
+    {
+        return "HTTP Status: " + String(_statusCode) + "\n" +
+               headersAsString() + "\n" + _body;
+    }
+
+    // ---------------------
+    // Convenience helpers
+    // ---------------------
+
+    /**
+     * @brief Returns true if the response indicates success (2xx).
+     */
+    bool ok() const { return _statusCode >= 200 && _statusCode < 300; }
+
+    /**
+     * @brief Returns true if the response indicates redirection (3xx).
+     */
+    bool isRedirect() const { return _statusCode >= 300 && _statusCode < 400; }
+
+    /**
+     * @brief Returns true if the response indicates client error (4xx).
+     */
+    bool isClientError() const { return _statusCode >= 400 && _statusCode < 500; }
+
+    /**
+     * @brief Returns true if the response indicates server error (5xx).
+     */
+    bool isServerError() const { return _statusCode >= 500 && _statusCode < 600; }
+
+    /**
+     * @brief Returns the Content-Type header value if present.
+     */
+    String contentType() const { return header("Content-Type"); }
+
+    /**
+     * @brief Clears all data from the response object.
+     */
+    void clear()
+    {
+        _statusCode = 0;
+        _body = "";
+        _headers.clear();
     }
 
 private:

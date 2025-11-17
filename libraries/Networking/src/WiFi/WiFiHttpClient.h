@@ -145,7 +145,7 @@ private:
         if (_logger)
         {
             _logger->info("[WiFiHttpClient] Response - STATUS: " + String(response.status()));
-            _logger->info("[WiFiHttpClient] Response - HEADERS:\n" + response.headers());
+            _logger->info("[WiFiHttpClient] Response - HEADERS:\n" + response.headersAsString());
             _logger->info("[WiFiHttpClient] Response - BODY:\n" + response.body());
         }
 
