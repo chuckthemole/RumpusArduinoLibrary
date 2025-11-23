@@ -90,6 +90,12 @@ public:
     void printStatus() override;
 
     /**
+     * @brief Get the current WiFi connection status.
+     * @return Current WiFi status as wl_status_t (e.g., WL_CONNECTED, WL_CONNECT_FAILED, etc.)
+     */
+    int getStatus() const override;
+
+    /**
      * @brief Check if WiFi is currently connected.
      * @return true if connected, false otherwise.
      */

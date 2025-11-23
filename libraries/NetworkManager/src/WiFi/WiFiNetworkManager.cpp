@@ -206,6 +206,11 @@ void WiFiNetworkManager::printStatus()
         _logger->info(String("[WiFiNetworkManager] ") + statusStr);
 }
 
+int WiFiNetworkManager::getStatus() const
+{
+    return WiFi.status();
+}
+
 /**
  * @brief Print IP address, RSSI, gateway, and subnet information.
  */

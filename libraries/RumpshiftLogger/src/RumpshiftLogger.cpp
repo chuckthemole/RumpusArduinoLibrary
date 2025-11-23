@@ -1,7 +1,12 @@
 #include "RumpshiftLogger.h"
 
-RumpshiftLogger::RumpshiftLogger(uint32_t baudRate, LogLevel level, bool inColor)
-    : _baudRate(baudRate), _logLevel(level), _inColor(inColor) {}
+RumpshiftLogger::RumpshiftLogger(
+    uint32_t baudRate,
+    LogLevel level,
+    bool inColor)
+    : _baudRate(baudRate),
+      _logLevel(level),
+      _inColor(inColor) {}
 
 void RumpshiftLogger::begin()
 {
@@ -70,6 +75,9 @@ void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
         case LOG_LEVEL_DEBUG:
             color = COLOR_BLUE;
             break;
+        case LOG_LEVEL_NONE:
+            color = COLOR_RESET;
+            break;
         }
         Serial.print(color);
     }
@@ -81,4 +89,8 @@ void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
 
     // Store in log lines buffer
     logLine(fullMsg);
+
+    // send to callback if assigned
+    if (_callback)
+        _callback(fullMsg);
 }

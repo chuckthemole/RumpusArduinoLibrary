@@ -77,12 +77,28 @@ public:
         return buffer;
     }
 
+    /**
+     * @brief Optional callback invoked whenever a log line is generated.
+     *
+     * Useful for piping logs into LVGL, websockets, SD logging, etc.
+     *
+     * Example:
+     *     logger.setCallback([](const String &msg) {
+     *         Diagnostic::update(msg.c_str());
+     *     });
+     */
+    using LogCallback = std::function<void(const String &msg)>;
+
+    /// Set the callback (pass nullptr to disable)
+    void setCallback(LogCallback cb) { _callback = cb; }
+
 private:
     uint32_t _baudRate;                  ///< Serial baud rate
     LogLevel _logLevel;                  ///< Current logging level
     bool _inColor;                       ///< Enable color in Serial output
     static const int MAX_LOG_LINES = 50; ///< Maximum stored log lines
     std::deque<String> _logLines;        ///< Stores recent logs
+    LogCallback _callback = nullptr;     ///< Optional log callback
 
     /**
      * @brief Core log function. Prints to Serial and stores in buffer if allowed by log level.
