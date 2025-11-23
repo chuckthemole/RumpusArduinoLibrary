@@ -3,7 +3,24 @@
 
 #include <Arduino.h>
 #include <lvgl.h>
+#include <Utils.h>
 
+/*
+ * Diagnostic overlay for LVGL
+ *
+ * Notes:
+ * 1. LVGL heap monitoring (LV_USE_MEM_MONITOR) must be enabled in lv_conf.h:
+ *       #define LV_USE_MEM_MONITOR 1
+ *    and a heap size allocated:
+ *       #define LV_MEM_SIZE (32*1024)  // adjust as needed
+ *    Otherwise, LVGL memory usage will show 0B/0B.
+ *
+ * 2. The 'Refresh' field indicates whether the LVGL display refresh timer
+ *    is active. It does not measure FPS directly, but if refresh is off,
+ *    LVGL won’t automatically redraw and FPS estimates may be inaccurate.
+ *
+ * 3. Call lv_init() and register the display driver before using Diagnostic::updateDefault().
+ */
 namespace Diagnostic
 {
     static lv_obj_t *diag_label = nullptr;
@@ -59,17 +76,31 @@ namespace Diagnostic
         lv_obj_invalidate(diag_label);
     }
 
-    /**
-     * @brief Update overlay with tick, FPS estimate, memory, and display stats.
-     */
+    inline const char *formatBytes(uint32_t bytes, char *buf, size_t bufSize)
+    {
+        if (bytes < 1024)
+        {
+            snprintf(buf, bufSize, "%luB", static_cast<unsigned long>(bytes));
+        }
+        else if (bytes < 1024 * 1024)
+        {
+            float kb = bytes / 1024.0f;
+            snprintf(buf, bufSize, "%.1fKB", kb);
+        }
+        else
+        {
+            float mb = bytes / (1024.0f * 1024.0f);
+            snprintf(buf, bufSize, "%.2fMB", mb);
+        }
+        return buf;
+    }
+
     inline void updateDefault()
     {
         if (!ready)
-        {
             createOverlay();
-            if (!ready)
-                return;
-        }
+        if (!ready)
+            return;
 
         lv_display_t *disp = lv_display_get_default();
         if (!disp)
@@ -77,7 +108,7 @@ namespace Diagnostic
 
         uint32_t tick = lv_tick_get();
 
-        // Calculate FPS (simple moving average)
+        // FPS estimate (moving average)
         if (last_tick != 0)
         {
             uint32_t delta = tick - last_tick;
@@ -91,29 +122,42 @@ namespace Diagnostic
 
         bool has_refresh = lv_display_get_refr_timer(disp) != nullptr;
 
-        uint32_t mem_used_kb = 0, mem_free_kb = 0;
+        // LVGL memory
+        uint32_t lv_mem_used = 0, lv_mem_free = 0;
 #if LV_USE_MEM_MONITOR
         lv_mem_monitor_t mon;
         lv_mem_monitor(&mon);
-        mem_free_kb = mon.free_size / 1024;
-        mem_used_kb = (mon.total_size - mon.free_size) / 1024;
+        lv_mem_free = mon.free_size;
+        lv_mem_used = (mon.total_size - mon.free_size);
 #endif
+
+        int free_ram = freeRAM(); // heap outside LVGL
+
+        // ---- Format human-readable fields ----
+        char ramBuf[16];
+        char lvUsedBuf[16];
+        char lvFreeBuf[16];
+
+        formatBytes(free_ram, ramBuf, sizeof(ramBuf));
+        formatBytes(lv_mem_used, lvUsedBuf, sizeof(lvUsedBuf));
+        formatBytes(lv_mem_free, lvFreeBuf, sizeof(lvFreeBuf));
 
         lv_coord_t hor = lv_display_get_horizontal_resolution(disp);
         lv_coord_t ver = lv_display_get_vertical_resolution(disp);
         uint32_t dpi = lv_display_get_dpi(disp);
 
-        char buf[192];
+        char buf[256];
         snprintf(buf, sizeof(buf),
-                 "Tick:%lu | FPS:%.1f | Refresh:%s | Mem:%lu/%luKB | %dx%d %luDPI",
+                 "Tick:%lu | FPS:%.1f | LVGL:%s/%s | RAM:%s | %dx%d %luDPI | Refresh:%s",
                  static_cast<unsigned long>(tick),
                  fps_estimate,
-                 has_refresh ? "yes" : "no",
-                 static_cast<unsigned long>(mem_used_kb),
-                 static_cast<unsigned long>(mem_free_kb),
+                 lvUsedBuf,
+                 lvFreeBuf,
+                 ramBuf,
                  static_cast<int>(hor),
                  static_cast<int>(ver),
-                 static_cast<unsigned long>(dpi));
+                 static_cast<unsigned long>(dpi),
+                 has_refresh ? "yes" : "no");
 
         lv_label_set_text(diag_label, buf);
         lv_obj_invalidate(diag_label);

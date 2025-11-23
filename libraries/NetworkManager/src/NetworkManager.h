@@ -7,6 +7,13 @@
 #include "NetworkServer.h"
 #include <memory>
 
+// TODO:
+// Currently, getStatus() returns an int for simplicity. In the future, consider
+// creating a common enum, e.g., NetworkStatus, that all network implementations
+// (WiFi, Ethernet, Mock, etc.) can use. This would make status codes type safe
+// and consistent across implementations. Each derived class would map its
+// platform specific status (e.g., wl_status_t for WiFi) to the common enum.
+
 /**
  * @class NetworkManager
  * @brief Abstract base class for managing network connections.
@@ -32,6 +39,16 @@ public:
      * @brief Print the current connection status (debugging/logging).
      */
     virtual void printStatus() = 0;
+
+    /**
+     * @brief Get the current network connection status.
+     *
+     * This is a generic status code. Derived classes (WiFi, Ethernet, etc.)
+     * can return implementation-specific values (e.g., WL_CONNECTED for WiFi).
+     *
+     * @return Integer status code.
+     */
+    virtual int getStatus() const = 0;
 
     /**
      * @brief Check if the network is currently connected.
