@@ -40,7 +40,7 @@ public:
      * @param name Name of the menu.
      * @param loader Screen loader.
      */
-    void addMenu(const String &name, ScreenLoader loader);
+    void addMenu(const String &name, ScreenLoader loader, ScreenLoader destroyer = nullptr);
 
     /**
      * @brief Add a menu entry using ONLY an init function.
@@ -52,7 +52,7 @@ public:
      * @param name Menu display name.
      * @param initFunc Screen initialization function (loads screen internally).
      */
-    void addMenu(const String &name, void (*initFunc)());
+    void addMenu(const String &name, void (*initFunc)(), void(*destroyFunc)());
 
     /**
      * @brief Get the number of menus.
@@ -84,10 +84,12 @@ private:
     {
         String name;
         ScreenLoader loader;
+        ScreenLoader destroyer;
     };
 
     std::vector<MenuEntry> _menus;
     RumpshiftLogger *_logger = nullptr;
+    mutable int _currentIndex = -1;
 
     // NOTE: safeLoadScreen is no longer used but kept for compatibility
     // static void safeLoadScreen(lv_obj_t *screen, RumpshiftLogger *logger)
@@ -105,10 +107,6 @@ private:
     //     // We do NOT call lv_scr_load here anymore.
     // }
 
-    /**
-     * @brief Private helper to create a ScreenLoader from an init function.
-     * (Refactored: No screen pointer, only initFunc)
-     */
     static ScreenLoader makeLoader(void (*initFunc)(), RumpshiftLogger *logger)
     {
         return [initFunc, logger]()
@@ -125,6 +123,24 @@ private:
 
             // SquareLine handles screen creation + lv_scr_load internally
             initFunc();
+        };
+    }
+
+    static ScreenLoader makeDestroyer(void (*destroyFunc)(), RumpshiftLogger *logger)
+    {
+        return [destroyFunc, logger]()
+        {
+            if (!destroyFunc)
+            {
+                if (logger)
+                    logger->error("[MenuManager] destroyFunc is nullptr");
+                return;
+            }
+
+            if (logger)
+                logger->info("[MenuManager] Running destroy function");
+
+            destroyFunc();
         };
     }
 };

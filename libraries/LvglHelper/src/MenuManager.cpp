@@ -3,7 +3,7 @@
 // ------------------------------------------------------------
 // Add a menu using a custom ScreenLoader
 // ------------------------------------------------------------
-void MenuManager::addMenu(const String &name, ScreenLoader loader)
+void MenuManager::addMenu(const String &name, ScreenLoader loader, ScreenLoader destroyer)
 {
     if (!loader)
     {
@@ -12,7 +12,7 @@ void MenuManager::addMenu(const String &name, ScreenLoader loader)
         return;
     }
 
-    _menus.push_back({name, loader});
+    _menus.push_back({name, loader, destroyer});
 
     if (_logger)
         _logger->info("[MenuManager] Added menu (custom loader): " + name);
@@ -22,7 +22,7 @@ void MenuManager::addMenu(const String &name, ScreenLoader loader)
 // Add a menu using ONLY an init function
 // (SquareLine initFunc handles lv_scr_load internally)
 // ------------------------------------------------------------
-void MenuManager::addMenu(const String &name, void (*initFunc)())
+void MenuManager::addMenu(const String &name, void (*initFunc)(), void (*destroyFunc)())
 {
     if (!initFunc)
     {
@@ -31,7 +31,7 @@ void MenuManager::addMenu(const String &name, void (*initFunc)())
         return;
     }
 
-    _menus.push_back({name, makeLoader(initFunc, _logger)});
+    _menus.push_back({name, makeLoader(initFunc, _logger), makeDestroyer(destroyFunc, _logger)});
 
     if (_logger)
         _logger->info("[MenuManager] Added menu (initFunc only): " + name);
@@ -113,17 +113,23 @@ void MenuManager::loadMenu(size_t index) const
         return;
     }
 
-    const auto &menu = _menus[index];
-
-    if (!menu.loader)
+    if (!_menus[index].loader)
     {
         if (_logger)
-            _logger->warn("[MenuManager] loadMenu called but loader is nullptr for: " + menu.name);
+            _logger->warn("[MenuManager] loadMenu called but loader is nullptr for: " + _menus[index].name);
         return;
     }
 
-    if (_logger)
-        _logger->info("[MenuManager] Loading menu: " + menu.name);
+    // Destroy previous screen
+    if (_currentIndex >= 0 && _currentIndex < _menus.size())
+    {
+        if (_menus[_currentIndex].destroyer)
+            _menus[_currentIndex].destroyer();
+    }
 
-    menu.loader(); // Calls initFunc(), which performs lv_scr_load()
+    // Load new screen
+    if (_logger)
+        _logger->info("[MenuManager] Loading menu: " + _menus[index].name);
+    _menus[index].loader();
+    _currentIndex = index;
 }
