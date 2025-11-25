@@ -49,15 +49,24 @@ namespace Diagnostic
 
         lv_obj_t *parent = lv_layer_top(); // top layer, survives screen changes
         diag_label = lv_label_create(parent);
-        lv_label_set_text(diag_label, "Diag: init...");
+
+        // Initial text
+        lv_label_set_text(diag_label, "Tick:... | FPS:...");
+
+        // Font and color
         lv_obj_set_style_text_font(diag_label, lv_theme_get_font_small(diag_label), 0);
         lv_obj_set_style_text_color(diag_label, lv_color_hex(0x00FF00), 0);
 
-        // Optional translucent background for readability
+        // Optional translucent background
         lv_obj_set_style_bg_color(diag_label, lv_color_hex(0x000000), 0);
         lv_obj_set_style_bg_opa(diag_label, LV_OPA_50, 0);
 
-        lv_obj_align(diag_label, LV_ALIGN_BOTTOM_RIGHT, -10, -10);
+        // Right-justified within the label
+        lv_label_set_long_mode(diag_label, LV_LABEL_LONG_CLIP);
+        lv_obj_set_style_text_align(diag_label, LV_TEXT_ALIGN_RIGHT, 0);
+
+        // Align top-right, offset down from screen top (so above built-in overlays)
+        lv_obj_align(diag_label, LV_ALIGN_BOTTOM_RIGHT, -10, -20);
     }
 
     /**
@@ -133,11 +142,8 @@ namespace Diagnostic
 
         int free_ram = freeRAM(); // heap outside LVGL
 
-        // ---- Format human-readable fields ----
-        char ramBuf[16];
-        char lvUsedBuf[16];
-        char lvFreeBuf[16];
-
+        // Format human-readable fields
+        char ramBuf[16], lvUsedBuf[16], lvFreeBuf[16];
         formatBytes(free_ram, ramBuf, sizeof(ramBuf));
         formatBytes(lv_mem_used, lvUsedBuf, sizeof(lvUsedBuf));
         formatBytes(lv_mem_free, lvFreeBuf, sizeof(lvFreeBuf));
