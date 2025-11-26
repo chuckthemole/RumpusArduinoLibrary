@@ -28,7 +28,10 @@ public:
 
     ~MenuManager() = default;
 
-    void setLogger(RumpshiftLogger *logger) { _logger = logger; }
+    void setLogger(RumpshiftLogger *logger)
+    {
+        _logger = logger;
+    }
 
     /**
      * Function to load a screen
