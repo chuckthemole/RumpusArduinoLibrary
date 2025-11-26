@@ -53,8 +53,13 @@ namespace Diagnostic
         // Initial text
         lv_label_set_text(diag_label, "Tick:... | FPS:...");
 
-        // Font and color
+// Font and color
+#if defined(LV_FONT_MONTSERRAT_8)
+        lv_obj_set_style_text_font(diag_label, &lv_font_montserrat_8, 0);
+#else
         lv_obj_set_style_text_font(diag_label, lv_theme_get_font_small(diag_label), 0);
+#endif
+
         lv_obj_set_style_text_color(diag_label, lv_color_hex(0x00FF00), 0);
 
         // Optional translucent background
@@ -66,7 +71,7 @@ namespace Diagnostic
         lv_obj_set_style_text_align(diag_label, LV_TEXT_ALIGN_RIGHT, 0);
 
         // Align top-right, offset down from screen top (so above built-in overlays)
-        lv_obj_align(diag_label, LV_ALIGN_BOTTOM_RIGHT, -10, -20);
+        lv_obj_align(diag_label, LV_ALIGN_BOTTOM_RIGHT, -10, -10);
     }
 
     /**

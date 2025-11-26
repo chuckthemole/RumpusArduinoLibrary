@@ -83,19 +83,75 @@ String MenuManager::getMenu(size_t index) const
     return _menus[index].name;
 }
 
-// ------------------------------------------------------------
-// Return all menu names concatenated with a delimiter
-// (default = newline for LVGL dropdowns)
-// ------------------------------------------------------------
-String MenuManager::getMenusDelimit(const String &delimiter) const
+int MenuManager::getMenuIndexByName(const String &name) const
 {
-    String result;
-
     for (size_t i = 0; i < _menus.size(); i++)
     {
-        result += _menus[i].name;
-        if (i < _menus.size() - 1)
+        if (_menus[i].name == name)
+            return static_cast<int>(i);
+    }
+    return -1;
+}
+
+String MenuManager::getMenusDelimit(const String &delimiter,
+                                    const String &excludeList) const
+{
+    // Parse exclude list into a vector<String>
+    std::vector<String> exclude;
+    if (excludeList.length() > 0)
+    {
+        int start = 0;
+        while (true)
+        {
+            int idx = excludeList.indexOf(',', start);
+            String token;
+
+            if (idx == -1)
+            {
+                token = excludeList.substring(start);
+            }
+            else
+            {
+                token = excludeList.substring(start, idx);
+                start = idx + 1;
+            }
+
+            // Trim whitespace
+            token.trim();
+
+            if (token.length() > 0)
+                exclude.push_back(token);
+
+            if (idx == -1)
+                break;
+        }
+    }
+
+    // Build output
+    String result;
+    bool first = true;
+
+    for (const auto &m : _menus)
+    {
+        // Check if name should be excluded
+        bool skip = false;
+        for (const auto &ex : exclude)
+        {
+            if (m.name == ex)
+            {
+                skip = true;
+                break;
+            }
+        }
+        if (skip)
+            continue;
+
+        // Append with delimiter rules
+        if (!first)
             result += delimiter;
+
+        result += m.name;
+        first = false;
     }
 
     return result;
@@ -104,7 +160,7 @@ String MenuManager::getMenusDelimit(const String &delimiter) const
 // ------------------------------------------------------------
 // Load menu by index (executes loader or initFunc())
 // ------------------------------------------------------------
-void MenuManager::loadMenu(size_t index) const
+void MenuManager::loadMenu(size_t index, bool callDestroyOnPreviousScreen) const
 {
     if (index >= _menus.size())
     {
@@ -113,23 +169,65 @@ void MenuManager::loadMenu(size_t index) const
         return;
     }
 
+    const String &newName = _menus[index].name;
+
+    // --- Destroy previous screen if requested ---
+    if (callDestroyOnPreviousScreen && _currentIndex >= 0 && _currentIndex < _menus.size())
+    {
+        const String &oldName = _menus[_currentIndex].name;
+
+        if (_logger)
+            _logger->info("[MenuManager] Destroying previous screen: " + oldName);
+
+        if (_menus[_currentIndex].destroyer)
+        {
+            _menus[_currentIndex].destroyer();
+
+            if (_logger)
+                _logger->info("[MenuManager] Destroyer executed for: " + oldName);
+        }
+        else
+        {
+            if (_logger)
+                _logger->warn("[MenuManager] No destroyer defined for previous screen: " + oldName);
+        }
+    }
+    else if (_logger)
+    {
+        _logger->info("[MenuManager] Skipping destroy of previous screen");
+    }
+
+    // --- Load new screen ---
+    if (_logger)
+        _logger->info("[MenuManager] Loading menu: " + newName);
+
     if (!_menus[index].loader)
     {
         if (_logger)
-            _logger->warn("[MenuManager] loadMenu called but loader is nullptr for: " + _menus[index].name);
+            _logger->error("[MenuManager] Loader is nullptr for: " + newName);
         return;
     }
 
-    // Destroy previous screen
-    if (_currentIndex >= 0 && _currentIndex < _menus.size())
-    {
-        if (_menus[_currentIndex].destroyer)
-            _menus[_currentIndex].destroyer();
-    }
-
-    // Load new screen
-    if (_logger)
-        _logger->info("[MenuManager] Loading menu: " + _menus[index].name);
     _menus[index].loader();
     _currentIndex = index;
+
+    if (_logger)
+        _logger->info("[MenuManager] Load complete: " + newName);
+}
+
+// ------------------------------------------------------------
+// Load menu by name
+// ------------------------------------------------------------
+bool MenuManager::loadMenu(const String &name, bool callDestroyOnPreviousScreen) const
+{
+    int idx = getMenuIndexByName(name);
+    if (idx < 0)
+    {
+        if (_logger)
+            _logger->error("[MenuManager] Menu not found: " + name);
+        return false;
+    }
+
+    loadMenu(static_cast<size_t>(idx), callDestroyOnPreviousScreen);
+    return true;
 }

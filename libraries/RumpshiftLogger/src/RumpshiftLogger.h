@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <deque>
+#include <functional>
 
 #define COLOR_RED "\033[31m"
 #define COLOR_GREEN "\033[32m"

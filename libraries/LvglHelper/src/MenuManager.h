@@ -52,7 +52,7 @@ public:
      * @param name Menu display name.
      * @param initFunc Screen initialization function (loads screen internally).
      */
-    void addMenu(const String &name, void (*initFunc)(), void(*destroyFunc)());
+    void addMenu(const String &name, void (*initFunc)(), void (*destroyFunc)());
 
     /**
      * @brief Get the number of menus.
@@ -68,16 +68,37 @@ public:
     String getMenu(size_t index) const;
 
     /**
-     * @brief Get all menus as a single string delimited by \n.
-     *        Useful for LVGL dropdown options.
+     * @brief Get menu index by name (exact match).
+     * @return Index or -1 if not found.
+     */
+    int getMenuIndexByName(const String &name) const;
+
+    /**
+     * @brief Get all menus as a single string delimited by `delimiter`,
+     *        optionally excluding a comma-delimited list of names.
+     *
+     * @param delimiter Delimiter between menu names (default: "\n")
+     * @param excludeList Optional comma-delimited list of menu names to filter out.
      * @return Delimited string of menu names.
      */
-    String getMenusDelimit(const String &delimiter = "\n") const;
+    String getMenusDelimit(
+        const String &delimiter = "\n",
+        const String &excludeList = "") const;
 
     /**
      * @brief Call to load a menu.
+     * @param index Menu index to load.
+     * @param callDestroyOnPreviousScreen Optional flag to destroy previous screen (default = true)
      */
-    void loadMenu(size_t index) const;
+    void loadMenu(size_t index, bool callDestroyOnPreviousScreen = false) const;
+
+    /**
+     * @brief Load a menu by display name.
+     * @param name Menu display name.
+     * @param callDestroyOnPreviousScreen Optional flag to destroy previous screen (default = true)
+     * @return true if loaded, false if not found.
+     */
+    bool loadMenu(const String &name, bool callDestroyOnPreviousScreen = false) const;
 
 private:
     struct MenuEntry
