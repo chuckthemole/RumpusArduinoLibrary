@@ -56,10 +56,63 @@ private:
     {
         HttpResponse response;
 
-        if (!_client.connect(host.c_str(), port))
+        // --- LOG BASIC INFO ---
+        if (_logger)
+        {
+            _logger->info("[WiFiHttpClient] ---- HTTP REQUEST BEGIN ----");
+            _logger->info("[WiFiHttpClient] Method: " + method);
+            _logger->info("[WiFiHttpClient] Host: " + host + " Port: " + String(port));
+            _logger->info("[WiFiHttpClient] Path: " + path);
+        }
+
+        // --- CHECK WIFI FIRST ---
+        if (WiFi.status() != WL_CONNECTED)
         {
             if (_logger)
-                _logger->error("[WiFiHttpClient] Failed to connect to " + host + ":" + String(port));
+            {
+                _logger->error("[WiFiHttpClient] WiFi not connected! Status=" + String(WiFi.status()));
+                _logger->error("[WiFiHttpClient] SSID=" + String(WiFi.SSID()));
+            }
+            response.setStatus(0);
+            return response;
+        }
+
+        if (_logger)
+        {
+            _logger->info("[WiFiHttpClient] WiFi connected. RSSI=" + String(WiFi.RSSI()) + " dBm");
+            _logger->info("[WiFiHttpClient] Local IP=" + WiFi.localIP().toString());
+        }
+
+        // --- DNS RESOLUTION DEBUG ---
+        IPAddress resolved;
+        if (!WiFi.hostByName(host.c_str(), resolved))
+        {
+            if (_logger)
+                _logger->error("[WiFiHttpClient] DNS failed for host: " + host);
+        }
+        else
+        {
+            if (_logger)
+                _logger->info("[WiFiHttpClient] DNS resolved: " + resolved.toString());
+        }
+
+        // --- TRY CONNECTING (DEBUG) ---
+        if (_logger)
+            _logger->info("[WiFiHttpClient] Attempting connection…");
+
+        bool connected = _client.connect(host.c_str(), port);
+        if (!connected)
+        {
+            if (_logger)
+            {
+                _logger->error("[WiFiHttpClient] connect() FAILED");
+                _logger->error("  ↳ Host: " + host);
+                _logger->error("  ↳ Port: " + String(port));
+                _logger->error("  ↳ Resolved IP: " + resolved.toString());
+                _logger->error("  ↳ WiFi Status: " + String(WiFi.status()));
+                _logger->error("  ↳ RSSI: " + String(WiFi.RSSI()));
+            }
+
             response.setStatus(0);
             return response;
         }

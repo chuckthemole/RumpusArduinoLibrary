@@ -98,7 +98,16 @@ void WiFiHelper::connectWiFi()
         attempts++;
     }
     if (_logger)
-        _logger->info("Connected!");
+    {
+        if (WiFi.status() == WL_CONNECTED)
+        {
+            _logger->info("Connected!");
+        }
+        else
+        {
+            _logger->info("Failed to connect.");
+        }
+    }
 }
 
 void WiFiHelper::reconnectWiFi()
