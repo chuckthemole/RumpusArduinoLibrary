@@ -6,6 +6,7 @@
 #include <functional>
 #include <Arduino.h>
 #include <RumpshiftLogger.h>
+#include <LvglHelperUtils.h>
 #include "lvgl.h"
 
 /**
