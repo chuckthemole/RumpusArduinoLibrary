@@ -25,28 +25,33 @@ public:
         String getId() const { return id; }
     };
 
-    const User *getUsers() const { return users; }
-    int getUserCount() const { return userCount; }
+    const User *getUsers() const { return _users; }
+    int getUserCount() const { return _userCount; }
 
     String getUsersDelimit(const String &delimiter = "\n") const
     {
         String result = "";
-        for (int i = 0; i < userCount; i++)
+        for (int i = 0; i < _userCount; i++)
         {
-            result += users[i].getName();
-            if (i < userCount - 1)
+            result += _users[i].getName();
+            if (i < _userCount - 1)
                 result += delimiter;
         }
         return result;
     }
 
+    void setUsers(const User *newUsers, int count);
+    void clearUsers();
+
+    bool getUserByName(String &name, User &user);
+
 private:
-    WiFiClientWrapper &wifiClient;
-    RumpshiftLogger *logger;
+    WiFiClientWrapper &_wifiClient;
+    RumpshiftLogger *_logger;
 
     static const int MAX_USERS = 20;
-    User users[MAX_USERS];
-    int userCount = 0;
+    User _users[MAX_USERS];
+    int _userCount = 0;
 };
 
 #endif
