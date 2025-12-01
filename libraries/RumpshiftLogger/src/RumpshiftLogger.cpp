@@ -48,16 +48,33 @@ void RumpshiftLogger::debug(const String &msg)
     log(LOG_LEVEL_DEBUG, "DEBUG", msg);
 }
 
+String RumpshiftLogger::getTimestamp()
+{
+    unsigned long ms = millis();
+
+    // Format: seconds.milliseconds
+    unsigned long seconds = ms / 1000;
+    unsigned long millisPart = ms % 1000;
+
+    // Example output: "12.034s"
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%lu.%03lus", seconds, millisPart);
+
+    return String(buf);
+}
+
 void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
 {
-    // Only log if this level is enabled
     if (_logLevel == LOG_LEVEL_NONE || level > _logLevel)
         return;
 
-    // Compose full message
-    String fullMsg = "[" + String(prefix) + "] " + msg;
+    // Timestamp + prefix
+    String fullMsg =
+        "[" + String(prefix) + "] " +
+        "[" + getTimestamp() + "] " +
+        msg;
 
-    // Serial output with optional color
+    // Optional colored output
     if (_inColor)
     {
         const char *color = COLOR_RESET;
@@ -75,8 +92,7 @@ void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
         case LOG_LEVEL_DEBUG:
             color = COLOR_BLUE;
             break;
-        case LOG_LEVEL_NONE:
-            color = COLOR_RESET;
+        default:
             break;
         }
         Serial.print(color);
@@ -87,10 +103,10 @@ void RumpshiftLogger::log(LogLevel level, const char *prefix, const String &msg)
     if (_inColor)
         Serial.print(COLOR_RESET);
 
-    // Store in log lines buffer
+    // Add to buffer
     logLine(fullMsg);
 
-    // send to callback if assigned
+    // Callback
     if (_callback)
         _callback(fullMsg);
 }

@@ -101,6 +101,8 @@ private:
     std::deque<String> _logLines;        ///< Stores recent logs
     LogCallback _callback = nullptr;     ///< Optional log callback
 
+    String getTimestamp();
+
     /**
      * @brief Core log function. Prints to Serial and stores in buffer if allowed by log level.
      * @param level The message severity level
