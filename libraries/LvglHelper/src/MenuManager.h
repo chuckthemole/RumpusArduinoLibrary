@@ -156,6 +156,37 @@ public:
             _logger->warn("[MenuManager] Menu not found to set updater: " + menuName);
     }
 
+    /**
+     * @brief Get the index of the currently active menu.
+     * @return Index or -1 if no menu is active yet.
+     */
+    inline int getCurrentMenuIndex() const
+    {
+        return _currentIndex;
+    }
+
+    /**
+     * @brief Get the name of the currently active menu.
+     * @return Menu name or empty string if none is active.
+     */
+    inline String getCurrentMenuName() const
+    {
+        if (_currentIndex < 0 || _currentIndex >= (int)_menus.size())
+            return "";
+        return _menus[_currentIndex].name;
+    }
+
+    /**
+     * @brief Get a pointer to the currently active menu entry.
+     * @return Pointer to MenuEntry or nullptr if none valid.
+     */
+    // inline const MenuEntry *getCurrentMenuEntry() const
+    // {
+    //     if (_currentIndex < 0 || _currentIndex >= (int)_menus.size())
+    //         return nullptr;
+    //     return &_menus[_currentIndex];
+    // }
+
 private:
     struct MenuEntry
     {

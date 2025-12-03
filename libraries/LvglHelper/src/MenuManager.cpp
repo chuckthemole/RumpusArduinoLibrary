@@ -208,6 +208,8 @@ void MenuManager::loadMenu(size_t index, bool callDestroyOnPreviousScreen) const
             _logger->info("[MenuManager] Loading cached screen: " + newName);
         lv_scr_load(_menus[index].cachedScreen);
 
+        _currentIndex = index;
+
         if (_menus[index].updater)
         {
             if (_logger)
@@ -224,8 +226,8 @@ void MenuManager::loadMenu(size_t index, bool callDestroyOnPreviousScreen) const
         return;
     }
 
-    _menus[index].loader();
     _currentIndex = index;
+    _menus[index].loader();
 
     if (_logger)
         _logger->info("[MenuManager] Load complete: " + newName);
