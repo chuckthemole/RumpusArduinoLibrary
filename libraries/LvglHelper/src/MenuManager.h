@@ -104,33 +104,73 @@ public:
      */
     bool loadMenu(const String &name, bool callDestroyOnPreviousScreen = false) const;
 
+    /**
+     * @brief Queue a menu to be loaded safely (LVGL-async).
+     *        This prevents re-entrant screen loads.
+     */
+    void queueMenu(const String &name, bool callDestroyOnPreviousScreen = false);
+
+    /**
+     * @brief Internal pump function called asynchronously by LVGL.
+     *        Do not call directly.
+     */
+    static void _asyncPump(void *data);
+
+    /**
+     * @brief Set a cached LVGL screen for a menu entry.
+     * This allows reusing a pre-created screen without calling init again.
+     * @param menuName Name of the menu to cache the screen for.
+     * @param screen Pointer to an already-initialized LVGL screen.
+     * @return true if menu found and cached, false otherwise.
+     */
+    inline bool setCachedScreen(const String &menuName, lv_obj_t *screen)
+    {
+        for (auto &entry : _menus)
+        {
+            if (entry.name == menuName)
+            {
+                entry.cachedScreen = screen;
+                if (_logger)
+                    _logger->info("[MenuManager] Cached screen for menu: " + menuName);
+                return true;
+            }
+        }
+        if (_logger)
+            _logger->warn("[MenuManager] Menu not found to cache screen: " + menuName);
+        return false;
+    }
+
+    inline void setUpdater(const String &menuName, ScreenLoader fn)
+    {
+        for (auto &entry : _menus)
+        {
+            if (entry.name == menuName)
+            {
+                entry.updater = fn;
+                if (_logger)
+                    _logger->info("[MenuManager] Updater set for menu: " + menuName);
+                return;
+            }
+        }
+        if (_logger)
+            _logger->warn("[MenuManager] Menu not found to set updater: " + menuName);
+    }
+
 private:
     struct MenuEntry
     {
         String name;
         ScreenLoader loader;
         ScreenLoader destroyer;
+        ScreenLoader updater;
+        lv_obj_t *cachedScreen = nullptr;
     };
 
     std::vector<MenuEntry> _menus;
     RumpshiftLogger *_logger = nullptr;
     mutable int _currentIndex = -1;
-
-    // NOTE: safeLoadScreen is no longer used but kept for compatibility
-    // static void safeLoadScreen(lv_obj_t *screen, RumpshiftLogger *logger)
-    // {
-    //     if (!screen)
-    //     {
-    //         if (logger)
-    //             logger->error("[MenuManager] Attempted to load nullptr screen!");
-    //         return;
-    //     }
-
-    //     if (logger)
-    //         logger->info("[MenuManager] safeLoadScreen called, but direct lv_scr_load usage is deprecated.");
-
-    //     // We do NOT call lv_scr_load here anymore.
-    // }
+    mutable bool _queuePending = false;
+    mutable std::vector<std::pair<String, bool>> _loadQueue;
 
     static ScreenLoader makeLoader(void (*initFunc)(), RumpshiftLogger *logger)
     {

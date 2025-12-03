@@ -201,6 +201,22 @@ void MenuManager::loadMenu(size_t index, bool callDestroyOnPreviousScreen) const
     if (_logger)
         _logger->info("[MenuManager] Loading menu: " + newName);
 
+    // -- Check for cached screen --
+    if (_menus[index].cachedScreen)
+    {
+        if (_logger)
+            _logger->info("[MenuManager] Loading cached screen: " + newName);
+        lv_scr_load(_menus[index].cachedScreen);
+
+        if (_menus[index].updater)
+        {
+            if (_logger)
+                _logger->info("[MenuManager] Running updater for cached screen: " + newName);
+            _menus[index].updater();
+        }
+        return;
+    }
+
     if (!_menus[index].loader)
     {
         if (_logger)
@@ -230,4 +246,63 @@ bool MenuManager::loadMenu(const String &name, bool callDestroyOnPreviousScreen)
 
     loadMenu(static_cast<size_t>(idx), callDestroyOnPreviousScreen);
     return true;
+}
+
+void MenuManager::queueMenu(const String &name, bool callDestroyOnPreviousScreen)
+{
+    // Append requested menu
+    _loadQueue.push_back({name, callDestroyOnPreviousScreen});
+
+    if (_logger)
+    {
+        _logger->info("[MenuManager] Queued menu: " + name +
+                      " (destroy previous: " + String(callDestroyOnPreviousScreen ? "true" : "false") + ")");
+    }
+
+    // Only schedule LVGL async ONCE
+    if (!_queuePending)
+    {
+        _queuePending = true;
+        if (_logger)
+            _logger->info("[MenuManager] Scheduling async pump for queued menus");
+        lv_async_call(MenuManager::_asyncPump, this);
+    }
+}
+
+void MenuManager::_asyncPump(void *data)
+{
+    MenuManager *self = static_cast<MenuManager *>(data);
+
+    if (self->_loadQueue.empty())
+    {
+        self->_queuePending = false;
+        if (self->_logger)
+            self->_logger->info("[MenuManager] Async pump: queue empty, nothing to load");
+        return;
+    }
+
+    // Pop the first queued request
+    auto [menuName, destroyFlag] = self->_loadQueue.front();
+    self->_loadQueue.erase(self->_loadQueue.begin());
+
+    if (self->_logger)
+        self->_logger->info("[MenuManager] Async pump: loading queued menu: " + menuName +
+                            " (destroy previous: " + String(destroyFlag ? "true" : "false") + ")");
+
+    // Perform actual load (LVGL-safe)
+    self->loadMenu(menuName, destroyFlag);
+
+    // If more queued, run again
+    if (!self->_loadQueue.empty())
+    {
+        if (self->_logger)
+            self->_logger->info("[MenuManager] Async pump: more menus queued, rescheduling");
+        lv_async_call(MenuManager::_asyncPump, self);
+    }
+    else
+    {
+        self->_queuePending = false;
+        if (self->_logger)
+            self->_logger->info("[MenuManager] Async pump: all queued menus processed");
+    }
 }
