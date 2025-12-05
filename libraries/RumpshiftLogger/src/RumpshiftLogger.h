@@ -97,7 +97,7 @@ private:
     uint32_t _baudRate;                  ///< Serial baud rate
     LogLevel _logLevel;                  ///< Current logging level
     bool _inColor;                       ///< Enable color in Serial output
-    static const int MAX_LOG_LINES = 50; ///< Maximum stored log lines
+    static const int MAX_LOG_LINES = 25; ///< Maximum stored log lines
     std::deque<String> _logLines;        ///< Stores recent logs
     LogCallback _callback = nullptr;     ///< Optional log callback
 
